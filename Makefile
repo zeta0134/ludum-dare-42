@@ -1,4 +1,4 @@
-hello.gb: hello_world.asm graphics.asm
+hello.gb: hello_world.asm graphics.asm util.asm animations.asm
 	rgbasm -o hello.obj hello_world.asm
 	rgblink -o hello.gb hello.obj 
 	rgbfix -v hello.gb
@@ -13,3 +13,25 @@ debug: hello.gb
 clean:
 	@rm -f *.gb
 	@rm -f *.obj
+
+SPRITE_FILES := $(wildcard art/sprites/*.png)
+SPRITE_2BPP := $(patsubst art/sprites/%.png,data/sprites/%.2bpp,$(SPRITE_FILES))
+TILEMAP_FILES := $(wildcard art/tiles/*.png)
+TILEMAP_2BPP := $(patsubst art/tiles/%.png,data/tiles/%.2bpp,$(TILEMAP_FILES))
+
+.PHONY: art
+art: $(SPRITE_2BPP) $(TILEMAP_2BPP)
+	@echo $(SPRITE_FILES)
+	@echo $(SPRITE_2BPP)
+	@echo $(TILEMAP_FILES)
+	@echo $(TILEMAP_2BPP)
+	@echo "Artwork built!"
+
+data/sprites/%.2bpp: art/sprites/%.png
+	@mkdir -p data/sprites
+	rgbgfx -h -f -o $@ $<
+
+data/tiles/%.2bpp: art/tiles/%.png
+	@mkdir -p data/tiles
+	rgbgfx -f -o $@ $<
+
