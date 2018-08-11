@@ -31,8 +31,8 @@ SpriteData:
         INCBIN "data/sprites/blobby2.2bpp"
         INCBIN "data/sprites/run_cycle.2bpp"
 
-SkullDungeonTiles:
-        INCBIN "data/tiles/skull_tiles.2bpp"
+SpaceStationTiles:
+        INCBIN "data/tiles/space_station.2bpp"
 
 TestMapData:
         INCLUDE "data/test_map.asm"
@@ -58,7 +58,7 @@ begin:
         ; Copy font data into VRAM at $8000. CopyMono duplicates each byte,
         ; since the source data is 1bpp, and our source data is 2bpp
 
-        ld      hl,SkullDungeonTiles
+        ld      hl,SpaceStationTiles
         ld      de,$9000
         ld      bc,16*128        ; length (8 bytes per tile) x (256 tiles)
         call    mem_Copy    ; Copy tile data to memory
@@ -67,7 +67,7 @@ begin:
 
         ld      hl,SpriteData
         ld      de,$8000
-        ld      bc,512
+        ld      bc,2048
         call    mem_Copy
 
         call    initOAM
