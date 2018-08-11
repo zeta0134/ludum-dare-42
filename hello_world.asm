@@ -30,6 +30,17 @@ SpriteData:
         INCBIN "data/sprites/blobby1.2bpp"
         INCBIN "data/sprites/blobby2.2bpp"
         INCBIN "data/sprites/run_cycle.2bpp"
+        INCBIN "data/sprites/warning.2bpp"
+        INCBIN "data/sprites/wrench.2bpp"
+        INCBIN "data/sprites/double_wrench.2bpp"
+        INCBIN "data/sprites/bolt_up.2bpp"
+        INCBIN "data/sprites/bolt_down.2bpp"
+        INCBIN "data/sprites/explosion.2bpp"
+        INCBIN "data/sprites/numbers.2bpp"
+        INCBIN "data/sprites/material1.2bpp"
+        INCBIN "data/sprites/material2.2bpp"
+        INCBIN "data/sprites/material3.2bpp"
+        INCBIN "data/sprites/material4.2bpp"
 
 SpaceStationTiles:
         INCBIN "data/tiles/space_station.2bpp"
