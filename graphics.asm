@@ -32,6 +32,27 @@ OldTileY: DS 2
 
 FrameCounter: DS 2
 
+SPRITE_CHUNK EQU 0
+SPRITE_X_POS EQU 1
+SPRITE_Y_POS EQU 3
+SPRITE_TILE_BASE EQU 5
+SPRITE_ANIMATION_START EQU 6
+SPRITE_ANIMATION_CURRENT EQU 8
+SPRITE_ANIMATION_DURATION EQU 10
+SPRITE_ACTIVE EQU 11
+
+SpriteList: DS 12*12
+
+ANIMATION_DURATION EQU 0
+ANIMATION_TILE_INDEX EQU 1
+ANIMATION_X_OFFSET EQU 2
+ANIMATION_Y_OFFSET EQU 3
+
+; various temps
+tPosX: DS 1
+tPosY: DS 1
+tDebug: DS 1
+
         POPS        
 
         PUSHS           
@@ -381,6 +402,292 @@ init_Viewport:
         dec h
         jr nz, .loop
         ret
+
+;***************************************************************************
+;* updateSprites - Call this once per game update. Runs through all sprites
+;*   and determines their current animation frame, position, and other
+;*   attributes, before writing the values to shadow OAM
+;***************************************************************************
+updateSprites:
+        ld de, SpriteList
+        ld b, 0
+.loop
+        push bc
+        ld hl, SPRITE_ACTIVE
+        add hl, de
+        ld a, [hl]
+        cp 0
+        jp nz, .active
+.inactive
+        inc hl  ; move to the start of the next entry (+1 byte from here)
+        push hl ; replace de with hl contents using the stack
+        pop de
+        pop bc
+        inc b
+        ld a, 12
+        cp b
+        jp z, .end
+        jp .loop
+.active
+        ld hl, shadowOAM
+        ld a, b
+        sla a ; x8 (two OAM entries per 16x16 tile)
+        sla a
+        sla a
+        add a, l ;no overflow possible due to alignment
+        ld b, h
+        ld c, a
+        ; bc now points to shadow OAM entry for this sprite
+        ; de now points to the start of this sprite entry
+        push de
+        push bc
+        call .updateAnimation
+        pop bc
+        pop de
+        push de
+        push bc
+        call .updatePosition
+        pop bc
+        pop de
+.finishUpdate        
+        ld hl, 12
+        add hl, de 
+        ld d, h
+        ld e, l ; de now points to the next sprite in sequence
+        pop bc ; pop again here to restore bc as the counter
+        inc b
+        ld a, 12
+        cp b
+        jp nz, .loop
+.end
+        ret
+
+
+;* inputs:
+;*   SP+2 - OAM entry
+;*   SP+4 - logical sprite entry
+
+.updatePosition
+        getStackBC 4
+        ld hl, SPRITE_Y_POS ;high byte only
+        add hl, bc
+        ld a, [hl] 
+        ld [tPosY], a
+
+        getStackBC 4
+        ld hl, SPRITE_X_POS ;high byte only
+        add hl, bc
+        ld a, [hl] 
+        ld [tPosX], a
+
+        ; TODO: calculate position w/ respect to chunk
+
+        getStackBC 4
+        ld hl, SPRITE_ANIMATION_CURRENT
+        add hl, bc
+        ld a, [hl+]
+        ld e, a
+        ld d, [hl]
+        ; de now points at animation data for current frame
+        inc de ; skip duration
+        inc de ; skip tile index
+
+        ld a, [de]
+        ld hl, tPosX
+        add a, [hl]
+        ld [hl], a
+        inc de
+        ld a, [de]
+        ld hl, tPosY
+        add a, [hl]
+        ld [hl], a
+        inc de
+
+        ; finally, write these values to OAM
+        getStackBC 2
+        ld h, b
+        ld l, c
+        ld a, [tPosY]
+        ld [hl+], a
+        ld a, [tPosX]
+        ld [hl+], a
+        ; and again, for the second OAM entry
+        inc hl
+        inc hl
+        ld a, [tPosY]
+        ld [hl+], a
+        ld a, [tPosX]
+        add a, 8
+        ld [hl+], a
+
+        ret
+
+;* inputs:
+;*   SP+2 - OAM entry
+;*   SP+4 - logical sprite entry
+
+.updateAnimation
+        getStackBC 4
+        ld hl, SPRITE_ANIMATION_DURATION
+        add hl, bc
+        dec [hl]
+        jp z, .nextFrame
+        ret
+.nextFrame
+        getStackBC 4
+        ld hl, SPRITE_ANIMATION_CURRENT
+        add hl, bc
+        ld e, [hl]
+        inc hl
+        ld d, [hl]
+        ; de now contains current animation pointer
+        ld hl, 4
+        add hl, de
+        ld d, h
+        ld e, l
+        ; de now contains next animation pointer
+        ld a, [de]
+        cp 0
+        jp nz, .applyNextFrame
+.restartAnimation
+        ; Grab the starting address for this animation
+        getStackBC 4
+        ld hl, SPRITE_ANIMATION_START
+        add hl, bc
+        ld e, [hl]
+        inc hl
+        ld d, [hl]
+        ; de now contains the address of the starting frame. Write this
+        ;   out to the current frame to reset the animation
+
+.applyNextFrame
+        getStackBC 4
+        ld hl, SPRITE_ANIMATION_CURRENT
+        add hl, bc
+        ld [hl], e
+        inc hl
+        ld [hl], d
+        ; de still contains the current animation pointer, so proceed to
+        ;   update OAM with the new state
+
+        ; Set our delay to the duration for the current frame
+        getStackBC 4
+        ld hl, SPRITE_ANIMATION_DURATION
+        add hl, bc
+        ld a, [de]
+        ld [hl], a
+
+        ; Determine the base tile index for this frame
+        getStackBC 4
+        ld hl, SPRITE_TILE_BASE
+        add hl, bc
+        ld a, [hl]
+        ; Multiply the base index by 4
+        sla a
+        sla a
+        ld b, a
+        ; add it to the logical index for this animation
+        inc de
+        ld a, [de]
+        sla a ; multiply that by 4 also
+        sla a
+        add a, b
+        ld b, a
+        ; b now contains the final tile index for this animation
+
+        ; Update our OAM tile to the index for this frame
+        getStackDE 2
+        ld hl, 2
+        add hl, de
+        ld [hl], b
+        inc b ; skip to the next 8x16 tile
+        inc b
+        ld de, 4
+        add hl, de
+        ld [hl], b
+        ; and we're done!
+        ret
+
+;***************************************************************************
+;* initSprites - Just zeroes out sprite memory. That's all!
+;***************************************************************************
+initSprites:
+        ld hl, SpriteList
+        ld d, 12*12
+.loop
+        ld [hl], 0
+        inc hl
+        dec d
+        jp nz, .loop
+        ret
+
+;***************************************************************************
+;* spawnSprite - Creates a new sprite, at the specified index, with the
+;*   provided animation data
+;* inputs:
+;*   a - desired index
+;*   bc - animation address
+;***************************************************************************
+spawnSprite:
+        ld hl, SpriteList
+        cp 0
+        jp z, .spawn
+        ld de, 12
+.loop
+        add hl, de
+        dec a
+        jp nz, .loop
+.spawn
+        push hl
+        ; hl now points to the start of the sprite entry
+        ld de, SPRITE_ANIMATION_START
+        add hl, de
+        ld a, c
+        ld [hl+], a
+        ld a, b
+        ld [hl+], a
+        ; repeat that process for sprite_animation_current
+        ld a, c
+        ld [hl+], a
+        ld a, b
+        ld [hl+], a
+        
+        ; activate this sprite
+        pop hl
+        push hl
+        ld de, SPRITE_ACTIVE
+        add hl, de
+        ld [hl], 1
+        ; that's it?
+        pop hl
+        ret
+
+;***************************************************************************
+;* getSpriteAddress - Retrieve a sprite's memory address, by index
+;* input:
+;*   a - desired index
+;* output:
+;*   hl - address
+;***************************************************************************
+getSpriteAddress:
+        ld hl, SpriteList
+        cp 0
+        jp z, .done
+        ld de, 12
+.loop
+        add hl, de
+        dec a
+        jp nz, .loop
+.done
+        ret
+
+
+
+;***************************************************************************
+;* vblankRoutine - Called automatically by the hardware at the start of
+;*   the vertical blanking period. Beware: time sensitive! Must complete
+;*   all activities before vertical blanking ends.
+;***************************************************************************
 
 vblankRoutine:
         push af

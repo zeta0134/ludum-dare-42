@@ -68,3 +68,39 @@ getWordDE: MACRO
         ld a, [\1 + 1]
         ld e, a
         ENDM
+
+
+
+getStackBC: MACRO
+        ld hl, SP+\1
+        ld a, [hl+]
+        ld c, a
+        ld a, [hl]
+        ld b, a
+        ENDM
+
+getStackDE: MACRO
+        ld hl, SP+\1
+        ld a, [hl+]
+        ld e, a
+        ld a, [hl]
+        ld d, a
+        ENDM
+
+setStackBC: MACRO
+        ld hl, SP+\1
+        ld a, c
+        ld [hl+], a
+        ld a, b
+        ld [hl+], a
+        ENDM
+
+setStackDE: MACRO
+        ld hl, SP+\1
+        ld a, e
+        ld [hl+], a
+        ld a, d
+        ld [hl+], a
+        ENDM
+
+

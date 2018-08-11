@@ -21,6 +21,7 @@
         INCLUDE "vendor/memory.asm"
         INCLUDE "util.asm"
         INCLUDE "graphics.asm"
+        INCLUDE "animations.asm"
 
 FontTileData:
         chr_IBMPC1      1,8
@@ -90,16 +91,66 @@ begin:
         ld [MapWidth], a
 
         ; set our scroll position
-        setWordImm TargetCameraX, 0
+        setWordImm TargetCameraX, 0 
         setWordImm TargetCameraY, 0
 
         ; initialize the viewport
         call update_Camera
         call init_Viewport
 
-        ; Initialize blobby, the blob
-        set_16x16_Tile 0, 0
-        set_16x16_Pos  0, 50, 50
+        ; initialize some testing sprites
+        call initSprites
+        ld a, 0
+        ld bc, BlobbyBlobs
+        call spawnSprite
+
+        ld a, 0
+        call getSpriteAddress
+        ld b, h
+        ld c, l
+
+        ld hl, SPRITE_X_POS
+        add hl, bc
+        ld [hl], 40
+
+        ld hl, SPRITE_Y_POS
+        add hl, bc
+        ld [hl], 66
+
+        ld a, 1
+        ld bc, BlobbyJumps
+        call spawnSprite
+
+        ld a, 1
+        call getSpriteAddress
+        ld b, h
+        ld c, l
+
+        ld hl, SPRITE_X_POS
+        add hl, bc
+        ld [hl], 60
+
+        ld hl, SPRITE_Y_POS
+        add hl, bc
+        ld [hl], 66
+
+        ld a, 2
+        ld bc, BlobbyWiggles
+        call spawnSprite
+
+        ld a, 2
+        call getSpriteAddress
+        ld b, h
+        ld c, l
+
+        ld hl, SPRITE_X_POS
+        add hl, bc
+        ld [hl], 80
+
+        ld hl, SPRITE_Y_POS
+        add hl, bc
+        ld [hl], 66
+        
 
         ; Now we turn on the LCD display to view the results!
 
@@ -119,15 +170,16 @@ GameLoop:
         nop ; DMC bug workaround
 
         ; scroll!
-        getWordHL TargetCameraX
-        inc hl
-        setWordHL TargetCameraX
+        ;getWordHL TargetCameraX
+        ;inc hl
+        ;setWordHL TargetCameraX
 
-        getWordHL TargetCameraY
-        inc hl
-        setWordHL TargetCameraY
+        ;getWordHL TargetCameraY
+        ;inc hl
+        ;setWordHL TargetCameraY
 
         call update_Camera
+        call updateSprites
 
         jp      GameLoop
 
