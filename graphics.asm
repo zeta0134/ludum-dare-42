@@ -15,8 +15,6 @@ MAP_SIZE_128x128   EQU  7
         PUSHS           
         SECTION "Graphics WRAM",WRAM0
 MapAddress: DS 2
-MapWidth:   DS 1
-MapSize:    DS 1
 
 CurrentCameraX:    DS 2 ; What is currently displayed on the hardware right now?
 CurrentCameraY:    DS 2
@@ -182,7 +180,7 @@ draw_16x16_tile: MACRO
 ;*   bc, a
 ;***************************************************************************
 map_Tile_Address:
-        ld a, [MapSize]
+        ld a, 4
         ld h, b
         ld l, c
 .mul_loop:
@@ -330,7 +328,7 @@ draw_Column:
         ; add map width to de, advancing to the next row
         push de
         pop hl
-        ld a, [MapWidth]
+        ld a, 16
         ld c, a
         add hl, bc
         push hl

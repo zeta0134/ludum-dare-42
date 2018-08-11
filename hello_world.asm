@@ -37,6 +37,10 @@ SpaceStationTiles:
 TestMapData:
         INCLUDE "data/test_map.asm"
 
+TestChambers:
+        INCLUDE "data/test_chamber.map"
+        INCLUDE "data/test_chamber2.map"
+
 begin:
         di
         ld      sp,$ffff
@@ -78,22 +82,13 @@ begin:
         ld      bc,SCRN_VX_B * SCRN_VY_B
         call    mem_Set
 
-        ; Set our map to the test data
-        ; ld hl,TestMapData
-        ; ld a, h
-        ; ld [MapAddress],a
-        ; ld a, l
-        ; ld [MapAddress+1],a
-        setWordImm MapAddress, TestMapData
+        ; Set our map to the test chunk
+        setWordImm MapAddress, TestChambers
         ; Set our size accordingly
-        ld a, MAP_SIZE_32x32
-        ld [MapSize], a
-        ld a, 32
-        ld [MapWidth], a
 
         ; set our scroll position
         setWordImm TargetCameraX, 0 
-        setWordImm TargetCameraY, 0
+        setWordImm TargetCameraY, 16
 
         ; initialize the viewport
         call update_Camera
@@ -192,9 +187,8 @@ GameLoop:
         nop ; DMC bug workaround
 
         ; scroll!
-        ;getWordHL TargetCameraX
-        ;inc hl
-        ;setWordHL TargetCameraX
+        ld hl, TargetCameraX+1
+        inc [hl]
 
         ;getWordHL TargetCameraY
         ;inc hl
