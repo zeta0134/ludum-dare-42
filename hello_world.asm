@@ -26,12 +26,13 @@
 FontTileData:
         chr_IBMPC1      1,8
 
-BlobbyData:
-        INCBIN "data/blobby1.2bpp"
-        INCBIN "data/blobby2.2bpp"
+SpriteData:
+        INCBIN "data/sprites/blobby1.2bpp"
+        INCBIN "data/sprites/blobby2.2bpp"
+        INCBIN "data/sprites/run_cycle.2bpp"
 
 SkullDungeonTiles:
-        INCBIN "data/skull_tiles_vertical.2bpp"
+        INCBIN "data/tiles/skull_tiles.2bpp"
 
 TestMapData:
         INCLUDE "data/test_map.asm"
@@ -64,9 +65,9 @@ begin:
 
         ; Copy sprite data for Blobby into VRAM
 
-        ld      hl,BlobbyData
+        ld      hl,SpriteData
         ld      de,$8000
-        ld      bc,128
+        ld      bc,512
         call    mem_Copy
 
         call    initOAM
@@ -150,6 +151,27 @@ begin:
         ld hl, SPRITE_Y_POS
         add hl, bc
         ld [hl], 66
+
+        ld a, 3
+        ld bc, PlayerRuns
+        call spawnSprite
+
+        ld a, 3
+        call getSpriteAddress
+        ld b, h
+        ld c, l
+
+        ld hl, SPRITE_X_POS
+        add hl, bc
+        ld [hl], 40
+
+        ld hl, SPRITE_Y_POS
+        add hl, bc
+        ld [hl], 86
+
+        ld hl, SPRITE_TILE_BASE
+        add hl, bc
+        ld [hl], 2
         
 
         ; Now we turn on the LCD display to view the results!
