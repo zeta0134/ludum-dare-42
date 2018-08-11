@@ -33,6 +33,7 @@ SpriteData:
         INCBIN "data/sprites/tumble.2bpp"
         INCBIN "data/sprites/splat.2bpp"
         INCBIN "data/sprites/warning.2bpp"
+        INCBIN "data/sprites/crate.2bpp"
         INCBIN "data/sprites/wrench.2bpp"
         INCBIN "data/sprites/double_wrench.2bpp"
         INCBIN "data/sprites/bolt_up.2bpp"
