@@ -650,20 +650,24 @@ spawnSprite:
         ld [hl+], a
         ld a, b
         ld [hl+], a
-        ; repeat that process for sprite_animation_current
+        ; cheat here: decrement the animation start value by 4
+        dec bc
+        dec bc
+        dec bc
+        dec bc
+        ; write this "pre-animation" pointer to the sprite "current" entry
         ld a, c
         ld [hl+], a
         ld a, b
         ld [hl+], a
         
-        ; activate this sprite
-        pop hl
-        push hl
-        ld de, SPRITE_ACTIVE
-        add hl, de
-        ld [hl], 1
-        ; that's it?
-        pop bc 
+        pop bc ; bc now points to the sprite entry
+        ; now set a few variables to kick-start the sprite's animation state
+        setFieldByte SPRITE_ACTIVE, 1
+        ; this causes the animation to immediately skip to the first frame,
+        ; because we seeded it with frame -1 earlier
+        setFieldByte SPRITE_ANIMATION_DURATION, 1
+        ; That's it!
         ret
 
 ;***************************************************************************
