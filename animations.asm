@@ -1,29 +1,44 @@
 PlayerRuns:
-           ;Duration  Index  X-Offset  Y-Offset
-        DB   5,       0,        0,       -1
-        DB  10,       0,        0,       -2
-        DB   5,       0,        0,       -1
-        DB   8,       1,        0,        0
-        DB   8,       2,        0,        0
-        DB   5,       3,        0,       -1
-        DB  15,       3,        0,       -2
-        DB   5,       3,        0,       -1
-        DB   8,       4,        0,        0
-        DB   8,       5,        0,        0
-        DB   0,       0,        0,        0
+           ;Duration  Index  X-Offset  Y-Offset  Attributes
+        DB   5,       0,        0,       -1,        $10
+        DB  10,       0,        0,       -2,        $10
+        DB   5,       0,        0,       -1,        $10
+        DB   8,       1,        0,        0,        $10
+        DB   8,       2,        0,        0,        $10
+        DB   5,       3,        0,       -1,        $10
+        DB  15,       3,        0,       -2,        $10
+        DB   5,       3,        0,       -1,        $10
+        DB   8,       4,        0,        0,        $10
+        DB   8,       5,        0,        0,        $10
+        DB   0,       0,        0,        0,        $00
 
-ItemBobs:
+ItemBobLightPal:
            ;Duration  Index  X-Offset  Y-Offset
-        DB  20,       0,        0,        -1
-        DB  10,       0,        0,         0
-        DB  20,       0,        0,         1
-        DB  10,       0,        0,         0
-        DB   0,       0,        0,         0
+        DB  25,       0,        0,        -1,        $00
+        DB  16,       0,        0,         0,        $00
+        DB  25,       0,        0,         1,        $00
+        DB  16,       0,        0,         0,        $00
+        DB   0,       0,        0,         0,        $00
+
+ItemBobDarkPal:
+           ;Duration  Index  X-Offset  Y-Offset
+        DB  25,       0,        0,        -1,        $10
+        DB  16,       0,        0,         0,        $10
+        DB  25,       0,        0,         1,        $10
+        DB  16,       0,        0,         0,        $10
+        DB   0,       0,        0,         0,        $00
 
 Explosion:
            ;Duration  Index  X-Offset  Y-Offset
-        DB  15,       0,        0,         0
-        DB  15,       1,        0,         0
-        DB  15,       2,        0,         0
-        DB  15,       3,        0,         0
-        DB   0,       0,        0,         0
+        DB   2,       0,        0,         0,        $00
+        DB   2,       0,        0,         0,        $10
+        DB   2,       0,        0,         0,        $00
+        DB   2,       0,        0,         0,        $10
+        DB   2,       1,        0,         0,        $00
+        DB   2,       1,        0,         0,        $10
+        DB   2,       1,        0,         0,        $00
+        DB   2,       1,        0,         0,        $10
+        DB   4,       2,        0,         0,        $00
+        DB   4,       3,        0,         0,        $00
+        DB   4,       3,        0,         0,        $10
+        DB   0,       0,        0,         0,        $00

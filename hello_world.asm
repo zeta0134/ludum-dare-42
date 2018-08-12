@@ -116,18 +116,20 @@ begin:
         setFieldByte SPRITE_CHUNK, 0
 
         ld a, 1
-        ld bc, ItemBobs
+        ld bc, ItemBobDarkPal
         call spawnSprite
         setFieldByte SPRITE_X_POS, 40
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 12
+        setFieldByte SPRITE_CHUNK, 0
 
         ld a, 2
-        ld bc, ItemBobs
+        ld bc, ItemBobDarkPal
         call spawnSprite
         setFieldByte SPRITE_X_POS, 60
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 13
+        setFieldByte SPRITE_CHUNK, 0
 
         ld a, 3
         ld bc, Explosion
@@ -135,6 +137,7 @@ begin:
         setFieldByte SPRITE_X_POS, 80
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_CHUNK, 0
 
         ; initialize some gameplay things
         ld a, 0
