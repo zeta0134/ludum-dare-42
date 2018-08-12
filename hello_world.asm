@@ -27,8 +27,6 @@ FontTileData:
         chr_IBMPC1      1,8
 
 SpriteData:
-        INCBIN "data/sprites/blobby1.2bpp"
-        INCBIN "data/sprites/blobby2.2bpp"
         INCBIN "data/sprites/run_cycle.2bpp"
         INCBIN "data/sprites/tumble.2bpp"
         INCBIN "data/sprites/splat.2bpp"
@@ -47,9 +45,6 @@ SpriteData:
 
 SpaceStationTiles:
         INCBIN "data/tiles/space_station.2bpp"
-
-TestMapData:
-        INCLUDE "data/test_map.asm"
 
 TestChambers:
         INCLUDE "data/test_chamber3.map"
@@ -111,33 +106,13 @@ begin:
 
         ; initialize some testing sprites
         call initSprites
+
         ld a, 0
-        ld bc, BlobbyBlobs
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 40
-        setFieldByte SPRITE_Y_POS, 66
-
-        ld a, 1
-        ld bc, BlobbyJumps
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 60
-        setFieldByte SPRITE_Y_POS, 66
-
-        ld a, 2
-        ld bc, BlobbyWiggles
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 80
-        setFieldByte SPRITE_Y_POS, 66
-
-        ld a, 3
         ld bc, PlayerRuns
         call spawnSprite
-
-        ld a, 3
-        call getSpriteAddress
         setFieldByte SPRITE_X_POS, 40
         setFieldByte SPRITE_Y_POS, 86
-        setFieldByte SPRITE_TILE_BASE, 2
+        setFieldByte SPRITE_TILE_BASE, 0
 
         ; initialize some gameplay things
         ld a, 0
