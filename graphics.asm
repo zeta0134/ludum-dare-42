@@ -38,8 +38,9 @@ SPRITE_ANIMATION_START EQU 6
 SPRITE_ANIMATION_CURRENT EQU 8
 SPRITE_ANIMATION_DURATION EQU 10
 SPRITE_ACTIVE EQU 11
+SPRITE_HUD_SPACE EQU 12
 
-SpriteList: DS 12*12
+SpriteList: DS 17*13 ; 17 total 16x16 sprites, 13 bytes per table entry
 
 ANIMATION_DURATION EQU 0
 ANIMATION_TILE_INDEX EQU 1
@@ -47,9 +48,13 @@ ANIMATION_X_OFFSET EQU 2
 ANIMATION_Y_OFFSET EQU 3
 
 ; various temps
-tPosX: DS 1
-tPosY: DS 1
-tDebug: DS 1
+tPosX: DS 2
+tPosY: DS 2
+
+tDebugGraphics: DS 4
+tDebugScrollX: DS 1
+tDebugChunkLeft: DS 2
+tDebugFinalX: DS 2
 
         POPS        
 
@@ -426,7 +431,7 @@ updateSprites:
         pop de
         pop bc
         inc b
-        ld a, 12
+        ld a, 17
         cp b
         jp z, .end
         jp .loop
@@ -452,13 +457,13 @@ updateSprites:
         pop bc
         pop de
 .finishUpdate        
-        ld hl, 12
+        ld hl, 13
         add hl, de 
         ld d, h
         ld e, l ; de now points to the next sprite in sequence
         pop bc ; pop again here to restore bc as the counter
         inc b
-        ld a, 12
+        ld a, 17
         cp b
         jp nz, .loop
 .end
@@ -470,19 +475,111 @@ updateSprites:
 ;*   SP+4 - logical sprite entry
 
 .updatePosition
+        ; is this a HUD sprite? If so, skip a ton of this logic
+        getStackBC 4
+        ld hl, SPRITE_HUD_SPACE
+        add hl, bc
+        ld a, [hl]
+        cp 0
+        jp z, .chunkSpace
+        ; HUD space uses the object's X and Y coordinates directly
+        getStackBC 4
+        ld hl, SPRITE_X_POS ;high byte only
+        add hl, bc
+        ld a, [hl]
+        ld [tPosX], a
+        ld a, 0
+        ld [tPosX+1], a
+        getStackBC 4
+        ld hl, SPRITE_Y_POS ;high byte only
+        add hl, bc
+        ld a, [hl]
+        ld [tPosY], a
+        ld a, 0
+        ld [tPosY+1], a
+        ; done! Jump past all the chunk calculation logic and continue with animation logic.
+        jp .worldSpace
+
+.chunkSpace
+        ; start with the left-most pixel of the active chunk
+        ld a, [CurrentCameraX+1]
+        ld [tDebugScrollX], a
+        ld d, 0
+        ld e, a
+        ld hl, 0
+        ; test to see if the camera coordinate is greater than 96
+        ld a, 96
+        sub e
+        jp nc, .less
+        ld hl, 256
+.less
+        ; subtract the camera coordinates from hl
+        ld a, l
+        sub e
+        ld l, a
+        ld a, h
+        sbc d
+        ; al now contains the left-most coordinate of the active chunk
+        ; stash this in de for later
+        ld d, a
+        ld e, l
+
+        ; determine the difference between the active chunk and this object's chunk
+        getStackBC 4
+        ld hl, SPRITE_CHUNK ;high byte only
+        add hl, bc
+        ld b, [hl] 
+        ld a, [currentChunk]
+        ld c, a
+        ld a, b
+        sub c ; b now contains how far behind / ahead of the active chunk we are.
+        ld b, a
+        ; Translate this value into 256 * b
+        ld c, 0
+
+        ; bc contains chunk offset in pixels. Add it to de to obtain the left-most coordinate of the object's chunk
+        ld h, d
+        ld l, e
+        add hl, bc
+        ; stash this in de again
+        ld d, h
+        ld l, e
+
+        ; Grab the object's X coordinate
+        getStackBC 4
+        ld hl, SPRITE_X_POS ;high byte only
+        add hl, bc
+        ld a, [hl]
+        ; add it to our running total in de
+        ld h, 0
+        ld l, a
+        add hl, de
+        ; hl now contains the sprite's coordinate within its chunk. Stash this for now.
+        ld a, l
+        ld [tPosX], a
+        ld a, h
+        ld [tPosX+1], a
+
+        ; Determine the Y coordinate of the active chunk. This is simpler because we don't care about wrapping,
+        ; so the Y coordinate is effectively 0 - scrY
+        ld a, [CurrentCameraY+1]
+        ld b, a
+        ld a, 0
+        sub b
+        ld e, a
+        ; e now contains the Y coordinate of the active chunk
+
         getStackBC 4
         ld hl, SPRITE_Y_POS ;high byte only
         add hl, bc
         ld a, [hl] 
+        ; add in the t coordinate of the chunk
+        add e
+        ; stash this for later
         ld [tPosY], a
 
-        getStackBC 4
-        ld hl, SPRITE_X_POS ;high byte only
-        add hl, bc
-        ld a, [hl] 
-        ld [tPosX], a
-
-        ; TODO: calculate position w/ respect to chunk
+.worldSpace
+        ; Here, calculate the animation offsets, and add those to our working set for X and Y
 
         getStackBC 4
         ld hl, SPRITE_ANIMATION_CURRENT
@@ -493,17 +590,55 @@ updateSprites:
         ; de now points at animation data for current frame
         inc de ; skip duration
         inc de ; skip tile index
+        ; de now points to the X offset
 
         ld a, [de]
+        push de ; stash this, since we'll clobber it below with X offset calculations
+        ld c, a
+        ; extend sign bit into high byte
+        ld b, 0 
+        bit 7, c
+        jp z, .positive
+        ld b, $FF
+.positive
+        ; read working position into de
         ld hl, tPosX
-        add a, [hl]
-        ld [hl], a
+        ld e, [hl]
+        inc hl
+        ld d, [hl]
+        ; add our animation offset to it
+        ld h, b
+        ld l, c
+        add hl, de
+        ; hl now contains our final on-screen X coordinate
+        ; RANGE CHECK: Is this sprite offscreen?
+        ; stash original X coordinate in bc
+        ld b, h
+        ld c, l
+        setWordBC tDebugFinalX
+
+        ld hl, 16
+        add hl, bc ; hl now contains original coordinate +16
+        bit 7, h ; if hl is still negative, we are offscreen to the left. Bail!
+        jp nz, .hideSprite
+        ld hl, -160
+        add hl, bc ; hl now contains original coordinate - 160
+        bit 7, h ; if hl is still positive, we are offscreen to the right. Bail here too!
+        jp z, .hideSprite
+
+        ; if we got here, this sprite is on-screen! Grab the low byte of the coordinate, add 8 to it (OAM quirk), and
+        ; stash it for later.
+        ld a, 8
+        add a, c
+        ld [tPosX], a
+
+        ; Calculate the animation offset for Y
+        pop de
         inc de
-        ld a, [de]
+        ld a, [de]   ; a now contains Y-offset for this animation
         ld hl, tPosY
-        add a, [hl]
+        add a, [hl]  ; add it directly to tPosY on disk
         ld [hl], a
-        inc de
 
         ; finally, write these values to OAM
         getStackBC 2
@@ -523,6 +658,23 @@ updateSprites:
         ld [hl+], a
 
         ret
+.hideSprite
+        ; Firstly, pop de off the stack from earlier, since otherwise we skipped doing that
+        pop de
+        ; now we need to hide the sprite in OAM. can do this by setting its Y coordinate offscreen (ie, to 0xFF)
+        getStackBC 2
+        ld h, b
+        ld l, c
+        ld a, $FF
+        ld [hl], a
+        ; and again for the second OAM entry
+        REPT 4
+        inc hl
+        ENDR
+        ld [hl], a
+        ; done!
+        ret
+
 
 ;* inputs:
 ;*   SP+2 - OAM entry
@@ -630,7 +782,7 @@ updateSprites:
 ;***************************************************************************
 initSprites:
         ld hl, SpriteList
-        ld d, 12*12
+        ld d, 17*13
 .loop
         ld [hl], 0
         inc hl
@@ -651,7 +803,7 @@ spawnSprite:
         ld hl, SpriteList
         cp 0
         jp z, .spawn
-        ld de, 12
+        ld de, 13
 .loop
         add hl, de
         dec a
@@ -699,7 +851,7 @@ getSpriteAddress:
         ld hl, SpriteList
         cp 0
         jp z, .done
-        ld bc, 12
+        ld bc, 13
 .loop
         add hl, bc
         dec a
