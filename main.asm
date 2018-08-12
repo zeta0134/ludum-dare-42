@@ -28,6 +28,7 @@
 
         INCLUDE "gameplay.asm"
         INCLUDE "player.asm"
+        INCLUDE "score.asm"
 
 
 FontTileData:
@@ -111,14 +112,12 @@ begin:
         call update_Camera
         call init_Viewport
 
-        ; initialize some testing sprites
+        ; initialize OAM and sprite tables
         call    initOAM
         call initSprites
 
         ; we start in main gameplay mode for now, so initialize all of that
-        call initGameplay
-
-        
+        call initGameplay        
 
         ; Now we turn on the LCD display to view the results!
 
@@ -131,6 +130,11 @@ begin:
         ei
 
         ; It's show time!
+
+        PUSHS           
+        SECTION "Main WRAM",WRAM0
+; it's lonely here!
+        POPS
 
 gameLoop:
         ; halt until the next vBlank
@@ -145,141 +149,6 @@ gameLoop:
         call    updatePlayer
 
         jp      gameLoop
-
-
-        PUSHS           
-        SECTION "Main WRAM",WRAM0
-
-chunkMarkers: DS 4
-lastRightmostTile: DS 1
-currentChunk: DS 1
-score: DS 3
-chunkBuffer: DS 256
-        POPS
-
-updateChunks:
-        ; determine right-most tile
-        ld a, [TargetCameraX+1]
-        swap a
-        add a, 10
-        and a, %00001111
-        ld d, a ;d now contains right-most tile
-        ; if this tile is different from last frame
-        ld a, [lastRightmostTile]
-        sub d
-        jp z, .saveTile
-        ; increase the score
-        call increaseScore
-        ; if this tile is 0
-        ld a, d
-        cp 0
-        jp nz, .saveTile
-        ; load the next chunk!
-        ld a, [currentChunk]
-        inc a
-        ;and a, %00000011 ; for now, restrict to 4 chunks in the buffer
-        ld [currentChunk], a
-        ld b, 0
-        ld c, a
-        ld hl, chunkBuffer
-        add hl, bc
-        ld a, [hl] ;a now contains active chunk
-        ld h, a
-        ld l, 0
-        ld bc, TestChambers
-        add hl, bc
-        setWordHL MapAddress
-.saveTile
-        ld a, d
-        ld [lastRightmostTile], a
-        ret
-
-initScore:
-        ld hl, score
-        ld a, 0
-        ld [hl+], a
-        ld [hl+], a
-        ld [hl], a
-        ld hl, shadowOAM + 34 * 4
-        ld d, 6
-        ld a, 63
-.loop
-        ld [hl], 20 ; y-coordinate 
-        inc hl
-        ld [hl+], a ; x-coordinate 
-        ld [hl], $50 ; tile-index
-        inc hl
-        inc hl ; skip over attributes
-        add a, 7
-        dec d
-        jp nz, .loop
-        ret
-
-increaseScore:
-        ld hl, score + 2
-        ld a, [hl]
-        add a, 1
-        daa
-        ld [hl-], a
-        jp c, .hundreds
-        ret
-.hundreds
-        ld a, [hl]
-        add a, 1
-        daa
-        ld [hl-], a
-        jp c, .tenThousands
-        ret
-.tenThousands
-        ld a, [hl]
-        add a, 1
-        daa
-        ld [hl], a
-        ret
-
-displayScore:
-        ld hl, shadowOAM + 34 * 4 + 2
-        ld a, [score]
-        call displayScoreByte
-        ld a, [score + 1]
-        call displayScoreByte
-        ld a, [score + 2]
-        call displayScoreByte
-        ret
-
-; hl - address of first digit's tile attribute
-; a - BCD value to display
-; -> hl - address of third digit's tile attribute
-; -> a, b, c - trashed
-displayScoreByte:
-        ; save left digit in a, right digit in b
-        ld c, a
-        and a, %00001111
-        ld b, a
-        ld a, c
-        swap a
-        and a, %00001111
-
-        ; calculate and write tile
-        sla a
-        add a, $50
-        ld [hl], a
-        ; advance to next digit tile attribute
-        inc hl
-        inc hl
-        inc hl
-        inc hl
-        ld a, b
-        ; calculate and write tile
-        sla a
-        add a, $50
-        ld [hl], a
-        ; advance to next digit tile attribute
-        inc hl
-        inc hl
-        inc hl
-        inc hl
-        ret
 
 ; *** Turn off the LCD display ***
 

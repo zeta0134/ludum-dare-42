@@ -1,3 +1,12 @@
+
+        PUSHS           
+        SECTION "Gameplay WRAM",WRAM0
+chunkMarkers: DS 4
+lastRightmostTile: DS 1
+currentChunk: DS 1
+chunkBuffer: DS 256
+        POPS
+
 initGameplay:
         call initPlayer
         call initScore
@@ -86,4 +95,41 @@ initGameplay:
         ld [chunkMarkers+2], a
         ld [chunkMarkers+3], a
 
+        ret
+
+updateChunks:
+        ; determine right-most tile
+        ld a, [TargetCameraX+1]
+        swap a
+        add a, 10
+        and a, %00001111
+        ld d, a ;d now contains right-most tile
+        ; if this tile is different from last frame
+        ld a, [lastRightmostTile]
+        sub d
+        jp z, .saveTile
+        ; increase the score
+        call increaseScore
+        ; if this tile is 0
+        ld a, d
+        cp 0
+        jp nz, .saveTile
+        ; load the next chunk!
+        ld a, [currentChunk]
+        inc a
+        ;and a, %00000011 ; for now, restrict to 4 chunks in the buffer
+        ld [currentChunk], a
+        ld b, 0
+        ld c, a
+        ld hl, chunkBuffer
+        add hl, bc
+        ld a, [hl] ;a now contains active chunk
+        ld h, a
+        ld l, 0
+        ld bc, TestChambers
+        add hl, bc
+        setWordHL MapAddress
+.saveTile
+        ld a, d
+        ld [lastRightmostTile], a
         ret
