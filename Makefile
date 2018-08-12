@@ -3,8 +3,10 @@ SPRITE_2BPP := $(patsubst art/sprites/%.png,data/sprites/%.2bpp,$(SPRITE_FILES))
 TILEMAP_FILES := $(wildcard art/tiles/*.png)
 TILEMAP_2BPP := $(patsubst art/tiles/%.png,data/tiles/%.2bpp,$(TILEMAP_FILES))
 
-hello.gb: hello_world.asm graphics.asm util.asm animations.asm $(SPRITE_2BPP) $(TILEMAP_2BPP)
-	rgbasm -o hello.obj hello_world.asm
+ASM_FILES := $(wildcard *.asm) $(wildcard vendor/*.asm)
+
+hello.gb: $(ASM_FILES) $(SPRITE_2BPP) $(TILEMAP_2BPP)
+	rgbasm -o hello.obj main.asm
 	rgblink -o hello.gb hello.obj 
 	rgbfix -v hello.gb
 
