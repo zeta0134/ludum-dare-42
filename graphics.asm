@@ -38,8 +38,9 @@ SPRITE_ANIMATION_START EQU 6
 SPRITE_ANIMATION_CURRENT EQU 8
 SPRITE_ANIMATION_DURATION EQU 10
 SPRITE_ACTIVE EQU 11
+SPRITE_HUD_SPACE EQU 12
 
-SpriteList: DS 12*12
+SpriteList: DS 17*13 ; 17 total 16x16 sprites, 13 bytes per table entry
 
 ANIMATION_DURATION EQU 0
 ANIMATION_TILE_INDEX EQU 1
@@ -430,7 +431,7 @@ updateSprites:
         pop de
         pop bc
         inc b
-        ld a, 12
+        ld a, 17
         cp b
         jp z, .end
         jp .loop
@@ -456,13 +457,13 @@ updateSprites:
         pop bc
         pop de
 .finishUpdate        
-        ld hl, 12
+        ld hl, 13
         add hl, de 
         ld d, h
         ld e, l ; de now points to the next sprite in sequence
         pop bc ; pop again here to restore bc as the counter
         inc b
-        ld a, 12
+        ld a, 17
         cp b
         jp nz, .loop
 .end
@@ -752,7 +753,7 @@ updateSprites:
 ;***************************************************************************
 initSprites:
         ld hl, SpriteList
-        ld d, 12*12
+        ld d, 17*13
 .loop
         ld [hl], 0
         inc hl
@@ -773,7 +774,7 @@ spawnSprite:
         ld hl, SpriteList
         cp 0
         jp z, .spawn
-        ld de, 12
+        ld de, 13
 .loop
         add hl, de
         dec a
@@ -821,7 +822,7 @@ getSpriteAddress:
         ld hl, SpriteList
         cp 0
         jp z, .done
-        ld bc, 12
+        ld bc, 13
 .loop
         add hl, bc
         dec a
