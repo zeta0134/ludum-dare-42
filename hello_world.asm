@@ -160,7 +160,9 @@ begin:
         ld [tDebugGraphics+3], a
 
         call initScore
-        
+        ld a, 0
+        ld [playerSpeedX], a
+        ld [playerSpeedY], a
 
         ; Now we turn on the LCD display to view the results!
 
@@ -180,26 +182,43 @@ gameLoop:
         nop ; DMC bug workaround
 
         ; scroll!
-        ld      hl, TargetCameraX+1
-        inc     [hl]
-        inc     [hl]
+        ;ld      hl, TargetCameraX+1
+        ;inc     [hl]
+        ;inc     [hl]
 
         call    updateChunks
         call    update_Camera
         call    updateSprites
         call    displayScore
+        call    pollInput
+        call    updatePlayer
 
         jp      gameLoop
 
 
         PUSHS           
-        SECTION "Chunk Loader WRAM",WRAM0
+        SECTION "Main WRAM",WRAM0
 
 chunkMarkers: DS 4
 lastRightmostTile: DS 1
 currentChunk: DS 1
+keysOld: DS 1
+keysHeld: DS 1
+keysDown: DS 1
+keysUp: DS 1
+playerSpeedX: DS 1
+playerSpeedY: DS 1
 chunkBuffer: DS 256
-        
+
+KEY_START EQU $80
+KEY_SELECT EQU $40
+KEY_B EQU $20
+KEY_A EQU $10
+KEY_DOWN EQU $08
+KEY_UP EQU $04
+KEY_LEFT EQU $02
+KEY_RIGHT EQU $01
+
         POPS
 
 updateChunks:
@@ -263,6 +282,143 @@ displayScore:
         ; todo: this
         ret
 
+updatePlayer:
+        ; calculate new player position based on current speed
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        ; grab the current position and chunk
+        ld a, [bc]
+        ld d, a ;chunk index
+        inc bc
+        ld a, [bc]
+        ld e, a ;x coord within chunk
+
+        ld a, [playerSpeedX]
+        ld l, a
+        ld h, 0
+        bit 7, a
+        jp z, .positive
+        ld h, $FF
+.positive
+        add hl, de ;combined player speed and chunk index
+        dec bc
+        ld a, h
+        ld [bc], a ;chunk index (high byte result)
+        inc bc
+        ld a, l
+        ld [bc], a ;x coordinate (low byte result)
+
+        ; similar for Y position, but less work because we don't care about chunk
+        inc bc
+        inc bc ; now pointing at y coord byte
+        ld a, [bc]
+        ld e, a ; y-coordinate
+        ld a, [playerSpeedY]
+        add e
+        ld [bc], a
+
+        ; handle player input
+        ld a, 0
+        ld [playerSpeedX], a
+        ld [playerSpeedY], a
+.checkRight
+        ld a, [keysHeld]
+        and a, KEY_RIGHT
+        jp z, .checkLeft
+        ld a, 1
+        ld [playerSpeedX], a
+.checkLeft
+        ld a, [keysHeld]
+        and a, KEY_LEFT
+        jp z, .checkUp
+        ld a, -1
+        ld [playerSpeedX], a
+.checkUp
+        ld a, [keysHeld]
+        and a, KEY_UP
+        jp z, .checkDown
+        ld a, -1
+        ld [playerSpeedY], a
+.checkDown
+        ld a, [keysHeld]
+        and a, KEY_DOWN
+        jp z, .done
+        ld a, 1
+        ld [playerSpeedY], a
+.done
+        ret
+
+INCLUDE "collision.asm"
+
+;* inputs:
+;*   b - chunk index
+;*   c - coordinate x (within chunk)
+;*   d - coordinate y
+collisionTileAt:
+        push de
+        ; fix x coordinate to count tiles and not pixels
+        ld a, c
+        swap a
+        and a, %00001111
+        ld c, a
+        ld hl, TestChambers
+        add hl, bc
+        ; fix y coordinate to count rows, but not tiles within rows
+        pop af
+        and a, %11110000
+        ld d, 0
+        ld e, a
+        add hl, de
+        ; hl now points to tile
+        ld a, [hl]
+        ; use tile type as index into collision lookup table
+        ld hl, collisionLUT
+        ld c, a
+        ld b, 0
+        add hl, bc ; hl now points to collision tile type
+        ld a, [hl]
+        ret
+
+pollInput:
+        ld a, %00010000
+        ld [rP1], a ; select direction keys
+        ; several dummy reads
+        ld a, [rP1]
+        ld a, [rP1]
+        ld a, [rP1]
+        ; real read
+        ld a, [rP1]
+        xor a, %11111111
+        and a, %00001111
+        swap a
+        ld b, a
+        ld a, %00100000
+        ld [rP1], a ; select button keys
+        ; several dummy reads
+        ld a, [rP1]
+        ld a, [rP1]
+        ld a, [rP1]
+        ; real read
+        ld a, [rP1]
+        xor a, %11111111
+        and a, %00001111
+        or a, b
+        ld [keysHeld], a
+        ld b, a
+        ; b now contains current button presses
+        ld a, [keysOld]
+        xor %11111111 ; if not keysOld
+        and b         ; and keysHeld
+        ld [keysDown], a ; then the key was just pressed
+        ld a, [keysOld]
+        ld b, a
+        ld a, [keysHeld]
+        xor %11111111 ; if not keysHeld
+        and b         ; ... but keysOld
+        ld [keysUp], a ; then the key was just released
+        ld a, [keysHeld]
+        ld [keysOld], a
+        ret
 
 ; *** Turn off the LCD display ***
 
