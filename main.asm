@@ -80,15 +80,14 @@ begin:
         ld      [rSCX],a
         ld      [rSCY],a
 
-        ; Copy font data into VRAM at $8000. CopyMono duplicates each byte,
-        ; since the source data is 1bpp, and our source data is 2bpp
+        ; Copy background tile data into VRAM at $8000.
 
         ld      hl,SpaceStationTiles
         ld      de,$8840
         ld      bc,16*256        ; length (8 bytes per tile) x (256 tiles)
         call    mem_Copy    ; Copy tile data to memory
 
-        ; Copy sprite data for Blobby into VRAM
+        ; Copy sprite data into VRAM
 
         ld      hl,SpriteData
         ld      de,$8000
@@ -96,7 +95,7 @@ begin:
         call    mem_Copy
 
         ; Clear the background
-        ld      a,$00          ; ASCII " "
+        ld      a,$00
         ld      hl,$9800
         ld      bc,SCRN_VX_B * SCRN_VY_B
         call    mem_Set
@@ -134,6 +133,7 @@ begin:
         PUSHS           
         SECTION "Main WRAM",WRAM0
 ; it's lonely here!
+currentGameState: DS 2
         POPS
 
 gameLoop:
@@ -141,14 +141,15 @@ gameLoop:
         halt
         nop ; DMC bug workaround
 
-        call    updateChunks
-        call    update_Camera
-        call    updateSprites
-        call    displayScore
-        call    pollInput
-        call    updatePlayer
+        call runGameState
 
+        call    pollInput
         jp      gameLoop
+
+runGameState:
+    getWordHL currentGameState
+    jp hl
+    ; game state returns
 
 ; *** Turn off the LCD display ***
 

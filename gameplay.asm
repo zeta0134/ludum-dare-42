@@ -7,7 +7,19 @@ currentChunk: DS 1
 chunkBuffer: DS 256
         POPS
 
+updateGameplay:
+        call    updateChunks
+        call    update_Camera
+        call    updateSprites
+        call    displayScore
+        call    updatePlayer
+        ret
+
 initGameplay:
+        ;* set our update function for the next game loop
+        ld hl, updateGameplay
+        setWordHL currentGameState
+
         call initPlayer
         call initScore
 
