@@ -530,7 +530,9 @@ updateSprites:
         add hl, bc
         ld b, [hl] 
         ld a, [currentChunk]
-        sub b ; b now contains how far behind / ahead of the active chunk we are.
+        ld c, a
+        ld a, b
+        sub c ; b now contains how far behind / ahead of the active chunk we are.
         ld b, a
         ; Translate this value into 256 * b
         ld c, 0

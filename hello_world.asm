@@ -135,19 +135,60 @@ begin:
         ld a, 3
         ld bc, Explosion
         call spawnSprite
-        setFieldByte SPRITE_X_POS, 80
-        setFieldByte SPRITE_Y_POS, 66
+        setFieldByte SPRITE_X_POS, 1
+        setFieldByte SPRITE_Y_POS, 30
+        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 4
+        ld bc, Explosion
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 4
+        setFieldByte SPRITE_Y_POS, 60
+        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 5
+        ld bc, Explosion
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 1
+        setFieldByte SPRITE_Y_POS, 90
+        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 6
+        ld bc, Explosion
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 4
+        setFieldByte SPRITE_Y_POS, 120
         setFieldByte SPRITE_TILE_BASE, 16
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ; initialize some gameplay things
         ld a, 0
         ld [lastRightmostTile], a
+
         ld [currentChunk], a
         ld hl, chunkBuffer
         ld bc, 256
         call mem_Set
+
         ; write some test chunks
+        ld b, 0
+        ld a, 0
+        ld hl, currentChunk
+.chunkInitLoop
+        ld [hl], a
+        inc a
+        inc hl
+        inc b
+        jp z, .done
+        cp a, 3
+        jp nz, .chunkInitLoop
+        ld a, 0
+        jp .chunkInitLoop
+.done
+
         ld a, 1
         ld [chunkBuffer+1], a
         ld a, 2
@@ -181,11 +222,6 @@ gameLoop:
         halt
         nop ; DMC bug workaround
 
-        ; scroll!
-        ;ld      hl, TargetCameraX+1
-        ;inc     [hl]
-        ;inc     [hl]
-
         call    updateChunks
         call    update_Camera
         call    updateSprites
@@ -200,8 +236,6 @@ gameLoop:
         SECTION "Main WRAM",WRAM0
 
 chunkMarkers: DS 4
-debugTileAtFeet: DS 1
-debugPlayerY: DS 1
 lastRightmostTile: DS 1
 currentChunk: DS 1
 keysOld: DS 1
@@ -211,6 +245,7 @@ keysUp: DS 1
 playerSpeedX: DS 1
 playerSpeedY: DS 1
 playerJumpTimer: DS 1
+playerAccelTimer: DS 1
 chunkBuffer: DS 256
 
 KEY_START EQU $80
@@ -244,7 +279,7 @@ updateChunks:
         ; load the next chunk!
         ld a, [currentChunk]
         inc a
-        and a, %00000011 ; for now, restrict to 4 chunks in the buffer
+        ;and a, %00000011 ; for now, restrict to 4 chunks in the buffer
         ld [currentChunk], a
         ld b, 0
         ld c, a
@@ -347,7 +382,6 @@ updatePlayer:
         push bc
         push de
         call collisionTileAt ;bc, d, result in a
-        ld [debugTileAtFeet], a
         call .checkFeetCollision
         pop de
         pop bc
@@ -367,36 +401,66 @@ updatePlayer:
         pop de
         pop bc
 
-        ; handle player input
-        ld a, 0
-        ld [playerSpeedX], a
+        ; handle trivial matters like gravitational forces and space-time
+        ld a, [playerAccelTimer]
+        dec a
+        ld [playerAccelTimer], a
+        jp nz, .terminalVelocity
+        ld a, 5
+        ld [playerAccelTimer], a
+        ld a, [playerSpeedY]
+        sub a, 3
+        bit 7, a
+        jp z, .terminalVelocity
+        add a, 4
         ld [playerSpeedY], a
+.terminalVelocity:
+
+        ; based on the player's position and their current speed, throw the camera out in front of them:
+        ld a, c ; remember, c still contains fine X at this point
+        add a, -30 ;behind the player = top-left corner of background
+        ld [TargetCameraX+1], a
+
+
+        ; handle player input
+        ld a, 2
+        ld [playerSpeedX], a
 ; Note: pretty much all the D-pad checks are for debug only
-.checkRight
+.checkRight:
         ld a, [keysHeld]
         and a, KEY_RIGHT
         jp z, .checkLeft
         ld a, 1
         ld [playerSpeedX], a
-.checkLeft
+.checkLeft:
         ld a, [keysHeld]
         and a, KEY_LEFT
-        jp z, .checkUp
+        jp z, .checkJump
         ld a, -1
         ld [playerSpeedX], a
-.checkUp
+.checkJump:
+        ; firstly, if A was just *released*, then zero out our jump timer. No double-jumping!
+        ld a, [keysUp]
+        and a, KEY_A | KEY_UP
+        jp z, .checkJumpHeld
+        ld a, 0
+        ld [playerJumpTimer], a
+.checkJumpHeld:
         ld a, [keysHeld]
-        and a, KEY_UP
-        jp z, .checkDown
-        ld a, -1
-        ld [playerSpeedY], a
-.checkDown
-        ld a, [keysHeld]
-        and a, KEY_DOWN
+        and a, KEY_A | KEY_UP
         jp z, .done
-        ld a, 1
+        ; Player's holding A! Do they have any jump juice left?
+        ld a, [playerJumpTimer]
+        cp 0
+        jp z, .done
+        ; Fling yourself into space
+        ld a, -3
         ld [playerSpeedY], a
-.done
+        ld hl, playerJumpTimer
+        dec [hl]
+        ld a, 5
+        ld [playerAccelTimer], a
+.done:
         ret
 
 ;* input: 
@@ -428,8 +492,12 @@ updatePlayer:
         ; since we're touching floor, reset our speed to 0:
         ld a, 0
         ld [playerSpeedY], a
+        ; if the player has released A here... 
+        ld a, [keysHeld]
+        and a, KEY_A | KEY_UP
+        jp nz, .notFloor
         ; Also refill our jump timer to max (allowing us to jump again if it was empty)
-        ld a, 30
+        ld a, 15
         ld [playerJumpTimer], a
         ; done!
 .notFloor
@@ -450,7 +518,17 @@ INCLUDE "collision.asm"
 ;*   c - coordinate x (within chunk)
 ;*   d - coordinate y
 collisionTileAt:
+        ; b is the chunk index into the ring buffer. We need to load the map number
+        ; to be able to retrieve the collision tile
+        push bc ;don't clobber this
         push de
+        ld hl, chunkBuffer
+        ld d, 0
+        ld e, b
+        add hl, de
+        ld a, [hl]
+        ld b, a ; b now contains the map number
+
         ; fix x coordinate to count tiles and not pixels
         ld a, c
         swap a
@@ -474,6 +552,7 @@ collisionTileAt:
         add hl, bc ; hl now points to collision tile type
         ld a, [hl]
         pop de
+        pop bc
         ret
 
 pollInput:
