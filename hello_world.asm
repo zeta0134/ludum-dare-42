@@ -51,6 +51,7 @@ TestMapData:
 TestChambers:
         INCLUDE "data/test_chamber.map"
         INCLUDE "data/test_chamber2.map"
+        INCLUDE "data/test_chamber3.map"
 
 begin:
         di
@@ -178,6 +179,28 @@ begin:
         ld hl, SPRITE_TILE_BASE
         add hl, bc
         ld [hl], 2
+
+        ; initialize some gameplay things
+        ld a, 0
+        ld [lastRightmostTile], a
+        ld [currentChunk], a
+        ld hl, chunkBuffer
+        ld bc, 256
+        call mem_Set
+        ; write some test chunks
+        ld a, 1
+        ld [chunkBuffer+1], a
+        ld a, 2
+        ld [chunkBuffer+2], a
+        ld [chunkBuffer+3], a
+        ; debug
+        ld a, 66
+        ld [chunkMarkers+0], a
+        ld [chunkMarkers+1], a
+        ld [chunkMarkers+2], a
+        ld [chunkMarkers+3], a
+
+
         
 
         ; Now we turn on the LCD display to view the results!
@@ -190,25 +213,67 @@ begin:
         ld      [rIE],a
         ei
 
-        ; A game loop might go here. Since we don't have one yet, we just idle infinitely.
+        ; It's show time!
 
-GameLoop:
+gameLoop:
         ; halt until the next vBlank
         halt
         nop ; DMC bug workaround
 
         ; scroll!
-        ld hl, TargetCameraX+1
-        inc [hl]
+        ld      hl, TargetCameraX+1
+        inc     [hl]
 
-        ;getWordHL TargetCameraY
-        ;inc hl
-        ;setWordHL TargetCameraY
+        call    updateChunks
+        call    update_Camera
+        call    updateSprites
 
-        call update_Camera
-        call updateSprites
+        jp      gameLoop
 
-        jp      GameLoop
+
+        PUSHS           
+        SECTION "Chunk Loader WRAM",WRAM0
+
+chunkMarkers: DS 4
+lastRightmostTile: DS 1
+currentChunk: DS 1
+chunkBuffer: DS 256
+        
+        POPS
+
+updateChunks:
+        ; determine right-most tile
+        ld a, [TargetCameraX+1]
+        swap a
+        add a, 10
+        and a, %00001111
+        ld d, a ;d now contains right-most tile
+        ; if this tile is 21
+        cp 0
+        jp nz, .saveTile
+        ; and the previous tile (from last frame) was 20
+        ld a, [lastRightmostTile]
+        cp 15
+        jp nz, .saveTile
+        ; load the next chunk!
+        ld a, [currentChunk]
+        inc a
+        and a, %00000011 ; for now, restrict to 4 chunks in the buffer
+        ld [currentChunk], a
+        ld b, 0
+        ld c, a
+        ld hl, chunkBuffer
+        add hl, bc
+        ld a, [hl] ;a now contains active chunk
+        ld h, a
+        ld l, 0
+        ld bc, TestChambers
+        add hl, bc
+        setWordHL MapAddress
+.saveTile
+        ld a, d
+        ld [lastRightmostTile], a
+        ret
 
 TitleText:
         DB      "Hello Blobby!"
