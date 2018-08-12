@@ -42,6 +42,8 @@ SpriteData:
         INCBIN "data/sprites/material2.2bpp"
         INCBIN "data/sprites/material3.2bpp"
         INCBIN "data/sprites/material4.2bpp"
+        INCBIN "data/sprites/station.2bpp"
+        INCBIN "data/sprites/station_building.2bpp"
 
 SpaceStationTiles:
         INCBIN "data/tiles/title.2bpp"
@@ -82,7 +84,7 @@ begin:
 
         ld      hl,SpriteData
         ld      de,$8000
-        ld      bc,2048
+        ld      bc,$880
         call    mem_Copy
 
         call    initOAM
