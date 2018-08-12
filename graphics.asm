@@ -543,12 +543,13 @@ updateSprites:
         inc hl
         ld d, [hl]
         ; de now contains current animation pointer
-        ld hl, 4
+        ld hl, 5
         add hl, de
         ld d, h
         ld e, l
-        ; de now contains next animation pointer
+        ; de now contains NEXT animation pointer
         ld a, [de]
+        ; if duration is zero, this signals the end of the animation list
         cp 0
         jp nz, .applyNextFrame
 .restartAnimation
@@ -597,16 +598,30 @@ updateSprites:
         ld b, a
         ; b now contains the final tile index for this animation
 
+        ; skip to the OAM attributes
+        inc de
+        inc de
+        inc de
+        ld a, [de]
+        ld c, a
+        ; c now contains the OAM attributes
+
+
         ; Update our OAM tile to the index for this frame
         getStackDE 2
         ld hl, 2
         add hl, de
-        ld [hl], b
+        ld [hl], b ; write the tile index
+        inc hl
+        ld [hl], c ; write the OAM attributes
         inc b ; skip to the next 8x16 tile
         inc b
-        ld de, 4
+        ld de, 3
         add hl, de
-        ld [hl], b
+        ld [hl], b ; write the next tile index
+        inc hl
+        ld [hl], c ; write the OAM attributes
+
         ; and we're done!
         ret
 
@@ -650,7 +665,8 @@ spawnSprite:
         ld [hl+], a
         ld a, b
         ld [hl+], a
-        ; cheat here: decrement the animation start value by 4
+        ; cheat here: decrement the animation start value by 5
+        dec bc
         dec bc
         dec bc
         dec bc
