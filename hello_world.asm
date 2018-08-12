@@ -113,6 +113,28 @@ begin:
         setFieldByte SPRITE_X_POS, 40
         setFieldByte SPRITE_Y_POS, 86
         setFieldByte SPRITE_TILE_BASE, 0
+        setFieldByte SPRITE_CHUNK, 0
+
+        ld a, 1
+        ld bc, ItemBobs
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 40
+        setFieldByte SPRITE_Y_POS, 66
+        setFieldByte SPRITE_TILE_BASE, 12
+
+        ld a, 2
+        ld bc, ItemBobs
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 60
+        setFieldByte SPRITE_Y_POS, 66
+        setFieldByte SPRITE_TILE_BASE, 13
+
+        ld a, 3
+        ld bc, Explosion
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 80
+        setFieldByte SPRITE_Y_POS, 66
+        setFieldByte SPRITE_TILE_BASE, 16
 
         ; initialize some gameplay things
         ld a, 0
