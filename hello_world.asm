@@ -154,10 +154,10 @@ begin:
         ld [chunkBuffer+2], a
         ; debug
         ld a, 66
-        ld [tDebugGraphics+0], a
-        ld [tDebugGraphics+1], a
-        ld [tDebugGraphics+2], a
-        ld [tDebugGraphics+3], a
+        ld [chunkMarkers+0], a
+        ld [chunkMarkers+1], a
+        ld [chunkMarkers+2], a
+        ld [chunkMarkers+3], a
 
         call initScore
         ld a, 0
@@ -200,6 +200,8 @@ gameLoop:
         SECTION "Main WRAM",WRAM0
 
 chunkMarkers: DS 4
+debugTileAtFeet: DS 1
+debugPlayerY: DS 1
 lastRightmostTile: DS 1
 currentChunk: DS 1
 keysOld: DS 1
@@ -208,6 +210,7 @@ keysDown: DS 1
 keysUp: DS 1
 playerSpeedX: DS 1
 playerSpeedY: DS 1
+playerJumpTimer: DS 1
 chunkBuffer: DS 256
 
 KEY_START EQU $80
@@ -307,6 +310,7 @@ updatePlayer:
         inc bc
         ld a, l
         ld [bc], a ;x coordinate (low byte result)
+        push hl ; stash this for later
 
         ; similar for Y position, but less work because we don't care about chunk
         inc bc
@@ -317,10 +321,57 @@ updatePlayer:
         add e
         ld [bc], a
 
+        ; grab the player's current coordinates
+        pop bc  ; current chunk and x position
+        ld d, a ; d contains original player Y
+        ; for starters, the y coordinate is 16 too high for graphics reasons; subtract 16
+        ld a, -16
+        add a, d
+        ld d, a
+        ; adjust to the player's center
+        ld hl, 8
+        add hl, bc
+        ld b, h
+        ld c, l    ; bc contains playerX + 8
+        ; coordinate is now centered at top of sprite
+        push bc
+        push de
+        call collisionTileAt ;bc, d - result in a
+        call .checkHeadCollision
+        pop de
+        pop bc
+        ld a, d
+        add a, 15
+        ld d, a    ; d contains playerY + 15
+        ; coordinate is now centered at player's feet
+        push bc
+        push de
+        call collisionTileAt ;bc, d, result in a
+        ld [debugTileAtFeet], a
+        call .checkFeetCollision
+        pop de
+        pop bc
+        ; adjust to player's front
+        ld hl, 6
+        add hl, bc
+        ld b, h
+        ld l, c ; bc = 6 pixels in front of player feet
+        ld a, -4
+        add a, d
+        ld d, a ; d = 4 pixels above feet
+        ; coordinate is now roughly ahead of player's knees
+        push bc
+        push de
+        call collisionTileAt ;bc, d, result in a
+        call .checkForwardCollision
+        pop de
+        pop bc
+
         ; handle player input
         ld a, 0
         ld [playerSpeedX], a
         ld [playerSpeedY], a
+; Note: pretty much all the D-pad checks are for debug only
 .checkRight
         ld a, [keysHeld]
         and a, KEY_RIGHT
@@ -348,6 +399,50 @@ updatePlayer:
 .done
         ret
 
+;* input: 
+;*   a - collision type of tile at feet
+;*   d - y coordinate of player's feet
+;* 
+.checkFeetCollision:
+        ; stash af
+        push af
+        ; naive check: is it a floor?
+        cp 1
+        jp nz, .notFloor
+        ; floor tiles only have solid floor in their bottom halves.
+        ; this check detects whether the foot pixel is in the lower
+        ; half of its respective tile, and bails if it is not.
+        bit 3, d
+        jp z, .notFloor
+        ; our foot is inside a floor tile, so we must snap our position
+        ; upwards so that our foot rests on the floor tile.
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        inc bc
+        inc bc
+        inc bc
+        ld a, [bc] ; y-coordinate of player
+        and a, %11110000 ; erase tile index
+        or a, %00001001 ; set tile index to 8
+        ld [bc], a
+        ; since we're touching floor, reset our speed to 0:
+        ld a, 0
+        ld [playerSpeedY], a
+        ; Also refill our jump timer to max (allowing us to jump again if it was empty)
+        ld a, 30
+        ld [playerJumpTimer], a
+        ; done!
+.notFloor
+        ; un-stash af and bail
+        pop af
+        ret
+
+.checkForwardCollision:
+        ret
+
+.checkHeadCollision:
+        ret
+
 INCLUDE "collision.asm"
 
 ;* inputs:
@@ -365,6 +460,7 @@ collisionTileAt:
         add hl, bc
         ; fix y coordinate to count rows, but not tiles within rows
         pop af
+        push af      
         and a, %11110000
         ld d, 0
         ld e, a
@@ -377,6 +473,7 @@ collisionTileAt:
         ld b, 0
         add hl, bc ; hl now points to collision tile type
         ld a, [hl]
+        pop de
         ret
 
 pollInput:
