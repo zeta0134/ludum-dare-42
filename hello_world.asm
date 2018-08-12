@@ -137,7 +137,7 @@ begin:
         setFieldByte SPRITE_X_POS, 80
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 16
-        setFieldByte SPRITE_CHUNK, 3
+        setFieldByte SPRITE_HUD_SPACE, 1
 
         ; initialize some gameplay things
         ld a, 0

@@ -475,6 +475,32 @@ updateSprites:
 ;*   SP+4 - logical sprite entry
 
 .updatePosition
+        ; is this a HUD sprite? If so, skip a ton of this logic
+        getStackBC 4
+        ld hl, SPRITE_HUD_SPACE
+        add hl, bc
+        ld a, [hl]
+        cp 0
+        jp z, .chunkSpace
+        ; HUD space uses the object's X and Y coordinates directly
+        getStackBC 4
+        ld hl, SPRITE_X_POS ;high byte only
+        add hl, bc
+        ld a, [hl]
+        ld [tPosX], a
+        ld a, 0
+        ld [tPosX+1], a
+        getStackBC 4
+        ld hl, SPRITE_Y_POS ;high byte only
+        add hl, bc
+        ld a, [hl]
+        ld [tPosY], a
+        ld a, 0
+        ld [tPosY+1], a
+        ; done! Jump past all the chunk calculation logic and continue with animation logic.
+        jp .worldSpace
+
+.chunkSpace
         ; start with the left-most pixel of the active chunk
         ld a, [CurrentCameraX+1]
         ld [tDebugScrollX], a
@@ -517,7 +543,7 @@ updateSprites:
         ld d, h
         ld l, e
 
-        ; Grab the object's X coordinate within its own chunk
+        ; Grab the object's X coordinate
         getStackBC 4
         ld hl, SPRITE_X_POS ;high byte only
         add hl, bc
@@ -550,6 +576,7 @@ updateSprites:
         ; stash this for later
         ld [tPosY], a
 
+.worldSpace
         ; Here, calculate the animation offsets, and add those to our working set for X and Y
 
         getStackBC 4
