@@ -121,7 +121,7 @@ begin:
         setFieldByte SPRITE_X_POS, 40
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 12
-        setFieldByte SPRITE_CHUNK, 0
+        setFieldByte SPRITE_CHUNK, 1
 
         ld a, 2
         ld bc, ItemBobDarkPal
@@ -129,7 +129,7 @@ begin:
         setFieldByte SPRITE_X_POS, 60
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 13
-        setFieldByte SPRITE_CHUNK, 0
+        setFieldByte SPRITE_CHUNK, 2
 
         ld a, 3
         ld bc, Explosion
@@ -137,7 +137,7 @@ begin:
         setFieldByte SPRITE_X_POS, 80
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 16
-        setFieldByte SPRITE_CHUNK, 0
+        setFieldByte SPRITE_CHUNK, 3
 
         ; initialize some gameplay things
         ld a, 0
@@ -153,10 +153,10 @@ begin:
         ld [chunkBuffer+2], a
         ; debug
         ld a, 66
-        ld [chunkMarkers+0], a
-        ld [chunkMarkers+1], a
-        ld [chunkMarkers+2], a
-        ld [chunkMarkers+3], a
+        ld [tDebugGraphics+0], a
+        ld [tDebugGraphics+1], a
+        ld [tDebugGraphics+2], a
+        ld [tDebugGraphics+3], a
 
 
         
@@ -180,6 +180,7 @@ gameLoop:
 
         ; scroll!
         ld      hl, TargetCameraX+1
+        inc     [hl]
         inc     [hl]
 
         call    updateChunks
