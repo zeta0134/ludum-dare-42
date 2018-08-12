@@ -158,7 +158,7 @@ begin:
         ld [tDebugGraphics+2], a
         ld [tDebugGraphics+3], a
 
-
+        call initScore
         
 
         ; Now we turn on the LCD display to view the results!
@@ -238,12 +238,27 @@ updateChunks:
         ld [lastRightmostTile], a
         ret
 
+initScore:
+        ld hl, shadowOAM + 34 * 4;
+        ld d, 5
+        ld a, 60
+.loop
+        ld [hl], 20 ; y-coordinate 
+        inc hl
+        ld [hl+], a ; x-coordinate 
+        ld [hl], $50 ; tile-index
+        inc hl
+        inc hl ; skip over attributes
+        add a, 8
+        dec d
+        jp nz, .loop
+        ret
 
-increaseScore
+increaseScore:
         ; TODO: this
         ret
 
-displayScore
+displayScore:
         ; todo: this
         ret
 
