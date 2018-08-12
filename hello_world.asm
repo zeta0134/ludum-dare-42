@@ -44,6 +44,7 @@ SpriteData:
         INCBIN "data/sprites/material4.2bpp"
 
 SpaceStationTiles:
+        INCBIN "data/tiles/title.2bpp"
         INCBIN "data/tiles/space_station.2bpp"
 
 TestChambers:
@@ -73,8 +74,8 @@ begin:
         ; since the source data is 1bpp, and our source data is 2bpp
 
         ld      hl,SpaceStationTiles
-        ld      de,$9000
-        ld      bc,16*128        ; length (8 bytes per tile) x (256 tiles)
+        ld      de,$8840
+        ld      bc,16*256        ; length (8 bytes per tile) x (256 tiles)
         call    mem_Copy    ; Copy tile data to memory
 
         ; Copy sprite data for Blobby into VRAM
