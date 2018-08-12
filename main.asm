@@ -27,6 +27,7 @@
         INCLUDE "input.asm"
 
         INCLUDE "gameplay.asm"
+        INCLUDE "title.asm"
         INCLUDE "player.asm"
         INCLUDE "score.asm"
 
@@ -100,28 +101,10 @@ begin:
         ld      bc,SCRN_VX_B * SCRN_VY_B
         call    mem_Set
 
-        ; Set our map to the test chunk
-        setWordImm MapAddress, TestChambers
-
-        ; set our scroll position
-        setWordImm TargetCameraX, 0 
-        setWordImm TargetCameraY, 16
-
-        ; initialize the viewport
-        call update_Camera
-        call init_Viewport
-
-        ; initialize OAM and sprite tables
-        call    initOAM
-        call initSprites
+        call initInput      
 
         ; we start in main gameplay mode for now, so initialize all of that
-        call initGameplay        
-
-        ; Now we turn on the LCD display to view the results!
-
-        ld      a,LCDCF_ON|LCDCF_BG8800|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
-        ld      [rLCDC],a       ; Turn screen on
+        call initTitleScreen
 
         ; Enable vblank, but nothing else for now
         ld      a,IEF_VBLANK
@@ -132,7 +115,6 @@ begin:
 
         PUSHS           
         SECTION "Main WRAM",WRAM0
-; it's lonely here!
 currentGameState: DS 2
         POPS
 
@@ -141,9 +123,9 @@ gameLoop:
         halt
         nop ; DMC bug workaround
 
-        call runGameState
-
+        call    runGameState
         call    pollInput
+
         jp      gameLoop
 
 runGameState:

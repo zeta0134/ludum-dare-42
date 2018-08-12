@@ -800,6 +800,7 @@ initSprites:
 ;*   bc - sprite address
 ;***************************************************************************
 spawnSprite:
+setSpriteAnimation: ;cheaty mc-cheat face
         ld hl, SpriteList
         cp 0
         jp z, .spawn

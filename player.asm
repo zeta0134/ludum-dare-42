@@ -4,6 +4,8 @@ playerSpeedX: DS 1
 playerSpeedY: DS 1
 playerJumpTimer: DS 1
 playerAccelTimer: DS 1
+playerDeathTimer: DS 1
+playerDead: DS 1
         POPS
 
 initPlayer:
@@ -26,9 +28,26 @@ initPlayer:
         ; (the first floor tile they hit will refresh this)
         ld a, 0
         ld [playerJumpTimer], a
+        ld [playerDead], a
+        ; Amount of time we remain in "gameplay" mode upon death, before
+        ; transitioning to a gameover screen
+        ld a, 60
+        ld [playerDeathTimer], a
         ret
 
 updatePlayer:
+        ld a, [playerDead]
+        cp 0
+        jp z, .notDead
+        ; how unfortunate
+        ld hl, playerDeathTimer
+        dec [hl]
+        jp nz, .deathLimbo
+        call initTitleScreen
+.deathLimbo
+        ret
+
+.notDead
         ; calculate new player position based on current speed
         ld a, 0
         call getSpriteAddress ; player sprite address in bc
@@ -214,6 +233,27 @@ updatePlayer:
         ret
 
 .checkForwardCollision:
+        ; we only really care about walls for now
+        cp 2
+        jp nz, .notWall
+        ; oh no! you died.
+        ; set animation state to "pancake"
+        ld a, 0
+        ld bc, StaticAnimation
+        call setSpriteAnimation
+        setFieldByte SPRITE_TILE_BASE, 9
+        ; push the player out of the wall
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        inc bc     
+        ld a, [bc] ; x-coordinate of player
+        and a, %11110000 ;mask off the tile position
+        or a, %00000110 ; replace it with a suitable wall-splat position
+        ld [bc], a
+        ; we have to tell the player they're dead :(
+        ld a, 1
+        ld [playerDead], a
+.notWall
         ret
 
 .checkHeadCollision:

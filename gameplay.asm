@@ -16,9 +16,17 @@ updateGameplay:
         ret
 
 initGameplay:
+        ; turn off the screen while we copy in data
+        di
+        call    StopLCD
+
         ;* set our update function for the next game loop
         ld hl, updateGameplay
         setWordHL currentGameState
+
+        ; clean slate for OAM and sprites
+        call    initOAM
+        call initSprites
 
         call initPlayer
         call initScore
@@ -71,6 +79,16 @@ initGameplay:
         setFieldByte SPRITE_TILE_BASE, 16
         setFieldByte SPRITE_HUD_SPACE, 1
 
+        ; Set our starting tilemap to the test chunk
+        setWordImm MapAddress, TestChambers
+        ; set our scroll position
+        setWordImm TargetCameraX, 0 
+        setWordImm TargetCameraY, 16
+
+        ; initialize the viewport
+        call update_Camera
+        call init_Viewport
+
                 ; initialize some gameplay things
         ld a, 0
         ld [lastRightmostTile], a
@@ -106,6 +124,12 @@ initGameplay:
         ld [chunkMarkers+1], a
         ld [chunkMarkers+2], a
         ld [chunkMarkers+3], a
+
+        ; Finally, we turn on the LCD, and set LCD control parameters (same as gameplay)
+        ld      a,LCDCF_ON|LCDCF_BG8800|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
+        ld      [rLCDC],a
+
+        ei
 
         ret
 

@@ -15,6 +15,13 @@ keysDown: DS 1
 keysUp: DS 1
         POPS
 
+initInput:
+        ld a, 0
+        ld [keysOld], a
+        ld [keysHeld], a
+        ld [keysDown], a
+        ld [keysUp], a
+
 pollInput:
         ld a, %00010000
         ld [rP1], a ; select direction keys
