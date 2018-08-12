@@ -49,9 +49,9 @@ TestMapData:
         INCLUDE "data/test_map.asm"
 
 TestChambers:
+        INCLUDE "data/test_chamber3.map"
         INCLUDE "data/test_chamber.map"
         INCLUDE "data/test_chamber2.map"
-        INCLUDE "data/test_chamber3.map"
 
 begin:
         di
@@ -111,53 +111,20 @@ begin:
         ld a, 0
         ld bc, BlobbyBlobs
         call spawnSprite
-
-        ld a, 0
-        call getSpriteAddress
-        ld b, h
-        ld c, l
-
-        ld hl, SPRITE_X_POS
-        add hl, bc
-        ld [hl], 40
-
-        ld hl, SPRITE_Y_POS
-        add hl, bc
-        ld [hl], 66
+        setFieldByte SPRITE_X_POS, 40
+        setFieldByte SPRITE_Y_POS, 66
 
         ld a, 1
         ld bc, BlobbyJumps
         call spawnSprite
-
-        ld a, 1
-        call getSpriteAddress
-        ld b, h
-        ld c, l
-
-        ld hl, SPRITE_X_POS
-        add hl, bc
-        ld [hl], 60
-
-        ld hl, SPRITE_Y_POS
-        add hl, bc
-        ld [hl], 66
+        setFieldByte SPRITE_X_POS, 60
+        setFieldByte SPRITE_Y_POS, 66
 
         ld a, 2
         ld bc, BlobbyWiggles
         call spawnSprite
-
-        ld a, 2
-        call getSpriteAddress
-        ld b, h
-        ld c, l
-
-        ld hl, SPRITE_X_POS
-        add hl, bc
-        ld [hl], 80
-
-        ld hl, SPRITE_Y_POS
-        add hl, bc
-        ld [hl], 66
+        setFieldByte SPRITE_X_POS, 80
+        setFieldByte SPRITE_Y_POS, 66
 
         ld a, 3
         ld bc, PlayerRuns
@@ -165,20 +132,9 @@ begin:
 
         ld a, 3
         call getSpriteAddress
-        ld b, h
-        ld c, l
-
-        ld hl, SPRITE_X_POS
-        add hl, bc
-        ld [hl], 40
-
-        ld hl, SPRITE_Y_POS
-        add hl, bc
-        ld [hl], 86
-
-        ld hl, SPRITE_TILE_BASE
-        add hl, bc
-        ld [hl], 2
+        setFieldByte SPRITE_X_POS, 40
+        setFieldByte SPRITE_Y_POS, 86
+        setFieldByte SPRITE_TILE_BASE, 2
 
         ; initialize some gameplay things
         ld a, 0
@@ -192,7 +148,6 @@ begin:
         ld [chunkBuffer+1], a
         ld a, 2
         ld [chunkBuffer+2], a
-        ld [chunkBuffer+3], a
         ; debug
         ld a, 66
         ld [chunkMarkers+0], a
