@@ -104,3 +104,13 @@ setStackDE: MACRO
         ENDM
 
 
+
+;* inputs:
+;*   bc - object address
+;*   \1 - field offset
+;*   \2 - data value
+setFieldByte: MACRO
+        ld hl, \1
+        add hl, bc
+        ld [hl], \2
+        ENDM

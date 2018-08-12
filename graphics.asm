@@ -192,6 +192,11 @@ map_Tile_Address:
         getWordBC MapAddress
         add hl, bc
         ; and add the X coordinate
+        ; CHEAT: restrict the X coordinate to map width
+        ld a, e
+        and %00001111
+        ld e, a
+        ld d, 0
         add hl, de
         ; that's it!
         ret
@@ -253,9 +258,9 @@ update_Camera:
         setWordHL CurrentTileY
         call update_Bg_Scroll
 
-        ld a, [FrameCounter+1]
-        bit 0, a
-        jp z, .updateRow
+        ;ld a, [FrameCounter+1]
+        ;bit 0, a
+        ;jp z, .updateRow
 
 .updateColumn
         ; update entire perimiter (INEFFICIENT!!)
@@ -267,15 +272,14 @@ update_Camera:
         call draw_Column
         ret
 
-.updateRow 
-        getWordBC CurrentTileY
-        ld hl, 9
-        add hl, bc
-        ld b, h
-        ld c, l
-        call draw_Row
-
-        ret
+;.updateRow 
+;        getWordBC CurrentTileY
+;        ld hl, 9
+;        add hl, bc
+;        ld b, h
+;        ld c, l
+;        call draw_Row
+;        ret
 
 ;***************************************************************************
 ;*
@@ -307,7 +311,7 @@ draw_Column:
         call vram_Masked_Tile_Address ; result in hl, clobbers de
         pop de ; de = source address
 
-        REPT 9
+        REPT 16
         ld a, [de]
         ; multiply the logical tile by four
         sla a
@@ -625,6 +629,8 @@ initSprites:
 ;* inputs:
 ;*   a - desired index
 ;*   bc - animation address
+;* outputs:
+;*   bc - sprite address
 ;***************************************************************************
 spawnSprite:
         ld hl, SpriteList
@@ -644,20 +650,24 @@ spawnSprite:
         ld [hl+], a
         ld a, b
         ld [hl+], a
-        ; repeat that process for sprite_animation_current
+        ; cheat here: decrement the animation start value by 4
+        dec bc
+        dec bc
+        dec bc
+        dec bc
+        ; write this "pre-animation" pointer to the sprite "current" entry
         ld a, c
         ld [hl+], a
         ld a, b
         ld [hl+], a
         
-        ; activate this sprite
-        pop hl
-        push hl
-        ld de, SPRITE_ACTIVE
-        add hl, de
-        ld [hl], 1
-        ; that's it?
-        pop hl
+        pop bc ; bc now points to the sprite entry
+        ; now set a few variables to kick-start the sprite's animation state
+        setFieldByte SPRITE_ACTIVE, 1
+        ; this causes the animation to immediately skip to the first frame,
+        ; because we seeded it with frame -1 earlier
+        setFieldByte SPRITE_ANIMATION_DURATION, 1
+        ; That's it!
         ret
 
 ;***************************************************************************
@@ -665,18 +675,22 @@ spawnSprite:
 ;* input:
 ;*   a - desired index
 ;* output:
-;*   hl - address
+;*   bc - address
+;* clobbers:
+;*   hl
 ;***************************************************************************
 getSpriteAddress:
         ld hl, SpriteList
         cp 0
         jp z, .done
-        ld de, 12
+        ld bc, 12
 .loop
-        add hl, de
+        add hl, bc
         dec a
         jp nz, .loop
 .done
+        ld b, h
+        ld c, l
         ret
 
 
