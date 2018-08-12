@@ -186,6 +186,7 @@ gameLoop:
         call    updateChunks
         call    update_Camera
         call    updateSprites
+        call    displayScore
 
         jp      gameLoop
 
@@ -207,12 +208,15 @@ updateChunks:
         add a, 10
         and a, %00001111
         ld d, a ;d now contains right-most tile
-        ; if this tile is 21
-        cp 0
-        jp nz, .saveTile
-        ; and the previous tile (from last frame) was 20
+        ; if this tile is different from last frame
         ld a, [lastRightmostTile]
-        cp 15
+        sub d
+        jp z, .saveTile
+        ; increase the score
+        call increaseScore
+        ; if this tile is 0
+        ld a, d
+        cp 0
         jp nz, .saveTile
         ; load the next chunk!
         ld a, [currentChunk]
@@ -234,8 +238,14 @@ updateChunks:
         ld [lastRightmostTile], a
         ret
 
-TitleText:
-        DB      "Hello Blobby!"
+
+increaseScore
+        ; TODO: this
+        ret
+
+displayScore
+        ; todo: this
+        ret
 
 
 ; *** Turn off the LCD display ***
