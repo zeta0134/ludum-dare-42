@@ -4,6 +4,26 @@ StaticAnimation:
            ;Duration  Index  X-Offset  Y-Offset  Attributes
         DB   0,       0,        0,        0,        $00
 
+TitleSpaceStation:
+        ; Duration,  Index,  X,  Y,  Attributes
+        DB 18, 2, 0, 0, $00
+        DB 18, 1, 0, 0, $00
+        DB 18, 0, 0, 0, $00
+        DB 0, 0, 0, 0, $00
+
+TitleBuildMaterials:
+        ; Duration,  Index,  X,  Y,  Attributes
+        DB 8, 1, 0, 0, $00
+        DB 8, 0, 0, 0, $00
+        DB 0, 0, 0, 0, $00
+
+TitleExplosion:
+        ; Duration,  Index,  X,  Y,  Attributes
+        DB 8, 0, 0, 0, $00
+        DB 8, 1, 0, 0, $00
+        DB 14, 2, 0, 0, $00
+        DB 0, 0, 0, 0, $00
+
 PlayerRuns:
            ;Duration  Index  X-Offset  Y-Offset  Attributes
         DB   5,       0,        0,        1,        $10
