@@ -42,7 +42,7 @@ initPlayer:
         ld [playerDead], a
         ; Amount of time we remain in "gameplay" mode upon death, before
         ; transitioning to a gameover screen
-        ld a, 60
+        ld a, 120
         ld [playerDeathTimer], a
 
         ; debug stuff
@@ -63,6 +63,23 @@ updatePlayer:
         jp nz, .deathLimbo
         call initTitleScreen
 .deathLimbo
+        ; Check the death timer, and fade the palette out accordingly
+        ld a, [playerDeathTimer]
+        cp 90
+        jp nc, .doneWithPalette
+        ld      a, %00000110      ; lighter by one shade
+        ld      [rBGP], a
+        ld a, [playerDeathTimer]
+        cp 60
+        jp nc, .doneWithPalette
+        ld      a, %00000001      ; lighter by one shade
+        ld      [rBGP], a   
+        ld a, [playerDeathTimer]
+        cp 30
+        jp nc, .doneWithPalette
+        ld      a, %00000000      ; lighter by one shade
+        ld      [rBGP], a
+.doneWithPalette
         ; depending on the nature of our demise, we may still want to move right
         ld a, [SpriteList + SPRITE_CHUNK]
         ld b, a
