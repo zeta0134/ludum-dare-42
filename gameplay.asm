@@ -2,6 +2,7 @@
         PUSHS           
         SECTION "Gameplay WRAM",WRAM0
 chunkMarkers: DS 4
+lastSpawnTile: DS 1
 lastRightmostTile: DS 1
 currentChunk: DS 1
 chunkBuffer: DS 256
@@ -10,9 +11,11 @@ chunkBuffer: DS 256
 updateGameplay:
         call    updateChunks
         call    update_Camera
+        call    spawnObjects
         call    updateSprites
         call    displayScore
         call    updatePlayer
+        call    updateCrates
         ret
 
 initGameplay:
@@ -46,38 +49,6 @@ initGameplay:
         setFieldByte SPRITE_Y_POS, 66
         setFieldByte SPRITE_TILE_BASE, 13
         setFieldByte SPRITE_CHUNK, 2
-
-        ld a, 3
-        ld bc, Explosion
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 1
-        setFieldByte SPRITE_Y_POS, 30
-        setFieldByte SPRITE_TILE_BASE, 16
-        setFieldByte SPRITE_HUD_SPACE, 1
-
-        ld a, 4
-        ld bc, Explosion
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 4
-        setFieldByte SPRITE_Y_POS, 60
-        setFieldByte SPRITE_TILE_BASE, 16
-        setFieldByte SPRITE_HUD_SPACE, 1
-
-        ld a, 5
-        ld bc, Explosion
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 1
-        setFieldByte SPRITE_Y_POS, 90
-        setFieldByte SPRITE_TILE_BASE, 16
-        setFieldByte SPRITE_HUD_SPACE, 1
-
-        ld a, 6
-        ld bc, Explosion
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 4
-        setFieldByte SPRITE_Y_POS, 120
-        setFieldByte SPRITE_TILE_BASE, 16
-        setFieldByte SPRITE_HUD_SPACE, 1
 
         ; Set our starting tilemap to the test chunk
         setWordImm MapAddress, TestChambers
@@ -168,4 +139,17 @@ updateChunks:
 .saveTile
         ld a, d
         ld [lastRightmostTile], a
+        ret
+
+spawnObjects:
+        ld a, [lastSpawnTile]
+        ld b, a
+        ld a, [lastRightmostTile]
+        cp b
+        jp nz, .tileChanged
+        ret
+.tileChanged
+        ld [lastSpawnTile], a
+        ; for now, always spawn crates
+        call spawnCrate
         ret

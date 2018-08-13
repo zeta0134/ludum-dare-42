@@ -43,3 +43,27 @@ Explosion:
         DB   4,       3,        0,         0,        $10
         DB 255,       3,      160,         0,        $10   ; move offscreen to "vanish"
         DB   0,       0,        0,         0,        $00
+
+CrateIdle:
+           ;Duration  Index  X-Offset  Y-Offset  Attributes
+        DB  60,       0,        0,        0-3,        $10
+           ;Duration  Index  X-Offset  Y-Offset  Attributes
+        DB   0,       0,        0,        0,        $00
+
+CrateKicked:
+           ;Duration  Index  X-Offset  Y-Offset  Attributes   
+        DB   1,       0,        1,       -1-3,        $00
+        DB   1,       0,        2,       -2-3,        $00
+        DB   1,       0,        3,       -3-3,        $10
+        DB   1,       0,        4,       -3-3,        $10
+        DB   1,       0,        5,       -3-3,        $00
+        DB   1,       0,        6,       -3-3,        $00
+        DB   1,       0,        7,       -2-3,        $10
+        DB   1,       0,        8,       -1-3,        $10
+        DB   1,       0,        9,       -0-3,        $00
+        DB   1,       0,       10,       -1-3,        $00
+        DB   1,       0,       11,       -0-3,        $00
+        DB   1,       0,       12,       -0-3,        $00
+        DB 255,       0,       12,       -0-3,        $00 ;hold until despawn
+           ;Duration  Index  X-Offset  Y-Offset  Attributes
+        DB   0,       0,        0,        0,        $00    

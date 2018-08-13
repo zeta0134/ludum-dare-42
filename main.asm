@@ -30,6 +30,7 @@
         INCLUDE "title.asm"
         INCLUDE "player.asm"
         INCLUDE "score.asm"
+        INCLUDE "crate.asm"
 
 
 FontTileData:
