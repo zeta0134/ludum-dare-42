@@ -1,5 +1,10 @@
         PUSHS           
         SECTION "Player WRAM",WRAM0
+playerDebugMarkers: DS 4
+playerLastCollisionHead: DS 4
+playerLastCollisionFeet: DS 4
+playerLastCollisionWall: DS 4
+playerLastCollisionMap: DS 2
 playerSpeedX: DS 1
 playerSpeedY: DS 1
 playerJumpTimer: DS 1
@@ -33,6 +38,13 @@ initPlayer:
         ; transitioning to a gameover screen
         ld a, 60
         ld [playerDeathTimer], a
+
+        ; debug stuff
+        ld a, 66
+        ld [playerDebugMarkers+0], a
+        ld [playerDebugMarkers+1], a
+        ld [playerDebugMarkers+2], a
+        ld [playerDebugMarkers+3], a
         ret
 
 updatePlayer:
@@ -98,6 +110,8 @@ updatePlayer:
         ; coordinate is now centered at top of sprite
         push bc
         push de
+        setWordBC playerLastCollisionHead
+        setWordDE playerLastCollisionHead+2
         call collisionTileAt ;bc, d - result in a
         call .checkHeadCollision
         pop de
@@ -108,6 +122,8 @@ updatePlayer:
         ; coordinate is now centered at player's feet
         push bc
         push de
+        setWordBC playerLastCollisionFeet
+        setWordDE playerLastCollisionFeet+2
         call collisionTileAt ;bc, d, result in a
         call .checkFeetCollision
         pop de
@@ -123,6 +139,8 @@ updatePlayer:
         ; coordinate is now roughly ahead of player's knees
         push bc
         push de
+        setWordBC playerLastCollisionWall
+        setWordDE playerLastCollisionWall+2
         call collisionTileAt ;bc, d, result in a
         call .checkForwardCollision
         pop de
@@ -278,6 +296,7 @@ collisionTileAt:
         add hl, de
         ld a, [hl]
         ld b, a ; b now contains the map number
+        setWordBC playerLastCollisionMap
 
         ; fix x coordinate to count tiles and not pixels
         ld a, c
