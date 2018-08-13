@@ -5,6 +5,14 @@ debugFoundSlot: DS 1
 crateState: DS 3
         POPS
 
+initCrates:
+        ld hl, crateState
+        ld a, 0
+        ld [hl+], a
+        ld [hl+], a
+        ld [hl+], a
+        ret
+
 ;* Attempts to spawn a crate in the right-most column (currently just offscreen)
 ;* Spawning conditions: same tile as either a floor or a floaty platform.
 spawnCrate:

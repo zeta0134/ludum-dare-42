@@ -32,6 +32,7 @@ initGameplay:
         call initSprites
 
         call initPlayer
+        call initCrates
         call initScore
 
         ld a, 1
