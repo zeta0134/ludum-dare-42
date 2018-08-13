@@ -13,7 +13,7 @@ materialMarkers: DS 4
 materialSection:
 
 MATERIAL_SPAWN_COOLDOWN_FRAMES_INIT EQU 27
-MATERIAL_SPRITE_BASE EQU 12
+MATERIAL_SPRITE_BASE EQU 9
 
 materialSpawnCooldownFrames: DS 1
 nextMaterialIndex: DS 1

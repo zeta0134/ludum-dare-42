@@ -138,10 +138,10 @@ updatePlayer:
         jp nc, .doneBeingDead
         ld      a, %11111111      ; darker by one shade
         ld      [rBGP], a
-        ;ld      a, %11111111     ; "Light" sprite
-        ;ld      [rOBP0],a
-        ;ld      a, %11111111     ; "Dark"  sprite
-        ;ld      [rOBP1],a   
+        ld      a, %11111111     ; "Light" sprite
+        ld      [rOBP0],a
+        ld      a, %11111111     ; "Dark"  sprite
+        ld      [rOBP1],a   
 
 .doneBeingDead
         ret
