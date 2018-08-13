@@ -168,6 +168,9 @@ updateExplosions:
         ld a, [lastRightmostTile]
         cp b
         jp z, .noSpeedIncrease
+        ; actually, let's also only increase every OTHER tile
+        bit 7, a
+        jp z, .noSpeedIncrease
         ; increase explision at 1 unit (sub) per new tile. This is HALF the player's acceleration.
         ld a, [explosionSpeed+1] ; low byte
         add a, 1
