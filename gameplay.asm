@@ -13,7 +13,7 @@ materialMarkers: DS 4
 materialSection:
 
 MATERIAL_SPAWN_COOLDOWN_FRAMES_INIT EQU 27
-MATERIAL_SPRITE_BASE EQU 9
+MATERIAL_SPRITE_BASE EQU 12
 
 materialSpawnCooldownFrames: DS 1
 nextMaterialIndex: DS 1
@@ -237,7 +237,7 @@ updateMaterials:
         ; Pick a material... material (tile).
         ld a, [rDIV]
         and a, %11
-        add a, $19
+        add a, $16
         setFieldByte SPRITE_TILE_BASE, a
         setFieldByte SPRITE_HUD_SPACE, 1
         ld a, [nextMaterialIndex]
