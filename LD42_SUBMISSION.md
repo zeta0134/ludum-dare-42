@@ -8,8 +8,9 @@ We unfortunately didn't have time to get any music or sound effects into the eng
 
 ## Controls:
 
-Start - Begin
-A - Jump
+**A** - Jump
+
+**Start** - Begin
 
 ## Objectives
 
