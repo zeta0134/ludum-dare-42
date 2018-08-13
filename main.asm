@@ -64,12 +64,15 @@ SpaceStationTiles:
         INCBIN "data/tiles/space_station.2bpp"
 
 TestChambers:
-        INCLUDE "data/end_of_the_road.map"
-        INCLUDE "data/plain_aa.map"
-        INCLUDE "data/path_narrows_ac.map"
-        INCLUDE "data/path_widens_ca.map"
-        INCLUDE "data/path_split_ab.map"
-        INCLUDE "data/path_split_ba.map"
+        INCLUDE "data/end_of_the_road.map"      ; 0
+        INCLUDE "data/plain_aa.map"             ; 1
+        INCLUDE "data/path_narrows_ac.map"      ; 2
+        INCLUDE "data/path_widens_ca.map"       ; 3
+        INCLUDE "data/path_split_ab.map"        ; 4
+        INCLUDE "data/path_split_ba.map"        ; 5
+        INCLUDE "data/split_lower_jump_bb.map"  ; 6
+        INCLUDE "data/plain_step_aa.map"        ; 7
+        ; INCLUDE "data/pointy_new_hallway_cb.map"; 8
 
 begin:
         di
