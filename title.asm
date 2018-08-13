@@ -60,6 +60,14 @@ initTitleScreen:
         setFieldByte SPRITE_TILE_BASE, 16
         setFieldByte SPRITE_HUD_SPACE, 1
 
+        ld a, 5
+        ld bc, PlayerRuns
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 51
+        setFieldByte SPRITE_Y_POS, 22
+        setFieldByte SPRITE_TILE_BASE, 0
+        setFieldByte SPRITE_HUD_SPACE, 1
+
         ;* set our update function for the next game loop
         ld hl, updateTitleScreen
         setWordHL currentGameState
