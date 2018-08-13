@@ -12,6 +12,7 @@ playerJumpTimer: DS 1
 playerAccelTimer: DS 1
 playerDeathTimer: DS 1
 playerDead: DS 1
+playerTumbleTimer: DS 1
 lastPlayerTile: DS 1
         POPS
 
@@ -65,6 +66,21 @@ updatePlayer:
         ret
 
 .notDead
+        ; if we're tumbling, decrement that timer, and optionally deal with the animation
+        ld a, [playerTumbleTimer]
+        cp 0
+        jp z, .notTumbling
+        dec a
+        ld [playerTumbleTimer], a
+        cp 0
+        jp nz, .notTumbling
+        ; our tumble timer reached zero, so reset our animation to running
+        ld a, 0
+        ld bc, PlayerRuns
+        call spawnSprite
+        setFieldByte SPRITE_TILE_BASE, 0
+
+.notTumbling
         ; calculate new player position based on current speed
         ld a, 0
         call getSpriteAddress ; player sprite address in bc

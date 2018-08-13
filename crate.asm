@@ -2,6 +2,7 @@
         SECTION "Crate WRAM",WRAM0
 debugCrateMarker: DS 4
 debugFoundSlot: DS 1
+crateState: DS 3
         POPS
 
 ;* Attempts to spawn a crate in the right-most column (currently just offscreen)
@@ -74,7 +75,7 @@ spawnCrate:
         swap e ; e now contains the spawn height
         ; stash this (I don't remember if item spawning clobbers de; it probably does)
         push de
-        
+
         ld bc, CrateIdle
         call spawnSprite
         setFieldByte SPRITE_TILE_BASE, 11
@@ -114,6 +115,17 @@ updateCrates:
         ; if a is still positive, then die an honorable death
         bit 7, a
         jp z, .die
+        ; are we in a state where we can collide with the player?
+        ld hl, crateState - 4
+        ld d, 0
+        add hl, de
+        ld a, [hl]
+        cp 0
+        jp z, .checkPlayerCollision
+        push de
+        jp .noCollision
+
+.checkPlayerCollision
         ;* Is the player colliding with us?
         push de; stash counter
         ld hl, SPRITE_CHUNK
@@ -169,6 +181,41 @@ updateCrates:
         ld a, e
         ld bc, CrateKicked
         call setSpriteAnimation
+
+        ; slow down the player
+        ld a, [playerSpeedX+0]
+        sub 3
+        bit 7, a
+        jp nz, .lowSpeedLimit
+        ld a, [playerSpeedX+0]
+        dec a
+        ld [playerSpeedX+0], a
+        jp .doneWithSpeed
+.lowSpeedLimit
+        ; we're already going close to the speed minimum (speed <= 2) so just
+        ; clear out the sub speed. That way the player can't ever end up going
+        ; backwards from hitting a bunch of crates in a row.
+        ld a, 0
+        ld [playerSpeedX+1], a
+.doneWithSpeed
+
+        ; set the player's animation to tumble, and set their tumble timer
+        ld a, 0
+        ld bc, PlayerTumble
+        call spawnSprite
+        setFieldByte SPRITE_TILE_BASE, 6
+        ld a, 30
+        ld [playerTumbleTimer], a
+
+        ; mark ourselves as "active" so we don't collide again next frame
+        pop de
+        push de
+        ld d, 0
+        ld hl, crateState - 4
+        add hl, de
+        ld a, 1
+        ld [hl], a
+
         ; done!
 
 .noCollision
@@ -184,6 +231,13 @@ updateCrates:
         add hl, bc
         ld a, 0
         ld [hl], a
+        ; mark ourselves as inactive, so the next spawn can collide
+        ld d, 0
+        ld hl, crateState - 4
+        add hl, de
+        ld a, 0
+        ld [hl], a
+
         ; and we're done
         inc e
         ld a, e

@@ -38,6 +38,13 @@ PlayerRuns:
         DB   8,       5,        0,        2,        $10
         DB   0,       0,        0,        0,        $00
 
+PlayerTumble:
+        DB  10,       0,        0,        2,        $10
+        DB  10,       1,        0,        2,        $10
+        DB  10,       2,        0,        2,        $10
+        DB   0,       0,        0,        0,        $00
+
+
 ItemBobLightPal:
            ;Duration  Index  X-Offset  Y-Offset
         DB  25,       0,        0,        -1,        $00
