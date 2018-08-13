@@ -70,8 +70,8 @@ TestChambers:
         INCLUDE "data/path_widens_ca.map"       ; 3
         INCLUDE "data/path_split_ab.map"        ; 4
         INCLUDE "data/path_split_ba.map"        ; 5
-        INCLUDE "data/split_lower_jump_bb.map"  ; 6
-        INCLUDE "data/plain_step_aa.map"        ; 7
+        ; INCLUDE "data/split_lower_jump_bb.map"  ; 6
+        ; INCLUDE "data/plain_step_aa.map"        ; 7
         ; INCLUDE "data/pointy_new_hallway_cb.map"; 8
 
 begin:
