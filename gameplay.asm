@@ -1,6 +1,8 @@
 
         PUSHS           
         SECTION "Gameplay WRAM",WRAM0
+SCORE_X EQU 63
+
 chunkMarkers: DS 4
 lastSpawnTile: DS 1
 lastRightmostTile: DS 1
@@ -80,9 +82,20 @@ initGameplay:
         call    initOAM
         call initSprites
 
+        ld      a, %00011011      ; inverted gradient for material effects
+        ld      [rBGP], a
+
+        ; set blank tile to be black in this palette
+        ld a, $00
+        ld hl, $9000
+        ld bc, 16 * 4
+        call  mem_Set
+
+
         call initPlayer
         call initCrates
         call initWrench
+        ld a, SCORE_X
         call initScore
         call initWarningIndicators
         call initExplosions
@@ -203,9 +216,17 @@ updateMaterials:
         ld hl, materialSpawnCooldownFrames
         ld [hl], MATERIAL_SPAWN_COOLDOWN_FRAMES_INIT
 
+        ld a, [rDIV]
+        and a, %10
+        jp nz, .background
+        ld bc, StaticAnimation
+        jp .animationSelected
+.background
+        ld bc, StaticBackgroundAnimation
+        jp .animationSelected
+.animationSelected
         ld a, [nextMaterialIndex]
         add a, MATERIAL_SPRITE_BASE
-        ld bc, StaticAnimation
         call spawnSprite
 
         ; Pick a material... material (tile).

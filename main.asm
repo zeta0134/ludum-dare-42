@@ -28,9 +28,9 @@
         INCLUDE "input.asm"
 
         INCLUDE "gameplay.asm"
+        INCLUDE "score.asm"
         INCLUDE "title.asm"
         INCLUDE "player.asm"
-        INCLUDE "score.asm"
         INCLUDE "crate.asm"
         INCLUDE "explosion.asm"
         INCLUDE "wrench.asm"
@@ -108,6 +108,14 @@ begin:
         ld      hl,$9800
         ld      bc,SCRN_VX_B * SCRN_VY_B
         call    mem_Set
+
+        ld a, $00
+        ld [score + 0], a
+        ld [score + 1], a
+        ld [score + 2], a
+        ld [highScore + 0], a
+        ld [highScore + 1], a
+        ld [highScore + 2], a
 
         call initInput      
 

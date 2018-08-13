@@ -4,6 +4,12 @@ StaticAnimation:
            ;Duration  Index  X-Offset  Y-Offset  Attributes
         DB   0,       0,        0,        0,        $00
 
+StaticBackgroundAnimation:
+       ;Duration  Index  X-Offset  Y-Offset  Attributes
+        DB  60,       0,        0,        2,        %10010000
+           ;Duration  Index  X-Offset  Y-Offset  Attributes
+        DB   0,       0,        0,        0,        $00
+
 TitleSpaceStation:
         ; Duration,  Index,  X,  Y,  Attributes
         DB 18, 2, 0, 0, $00
