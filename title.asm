@@ -1,6 +1,8 @@
 titleMapData:
         INCLUDE "data/title.map"
 
+SHIP_Y EQU 118
+
 initTitleScreen:
         call    initOAM
         call initSprites
@@ -12,11 +14,51 @@ initTitleScreen:
 
         ; set our scroll position
         setWordImm TargetCameraX, 0 
-        setWordImm TargetCameraY, 0
+        setWordImm TargetCameraY, 16
 
         ; initialize the viewport
         call update_Camera
         call init_Viewport
+
+        ld a, 0
+        ld bc, TitleSpaceStation
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 48 + 8
+        setFieldByte SPRITE_Y_POS, SHIP_Y
+        setFieldByte SPRITE_TILE_BASE, 29
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 1
+        ld bc, TitleSpaceStation
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 48 + 16 + 8
+        setFieldByte SPRITE_Y_POS, SHIP_Y
+        setFieldByte SPRITE_TILE_BASE, 29
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 2
+        ld bc, TitleSpaceStation
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 48 + 32 + 8
+        setFieldByte SPRITE_Y_POS, SHIP_Y
+        setFieldByte SPRITE_TILE_BASE, 29
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 3
+        ld bc, TitleBuildMaterials
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 48 + 48 + 8
+        setFieldByte SPRITE_Y_POS, SHIP_Y - 5
+        setFieldByte SPRITE_TILE_BASE, 32
+        setFieldByte SPRITE_HUD_SPACE, 1
+
+        ld a, 4
+        ld bc, TitleExplosion
+        call spawnSprite
+        setFieldByte SPRITE_X_POS, 48 - 1
+        setFieldByte SPRITE_Y_POS, SHIP_Y - 4
+        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_HUD_SPACE, 1
 
         ;* set our update function for the next game loop
         ld hl, updateTitleScreen
@@ -31,6 +73,7 @@ initTitleScreen:
         ret
 
 updateTitleScreen:
+        call updateSprites
         ld a, [keysUp]
         and a, KEY_START
         jp z, .startNotPressed
