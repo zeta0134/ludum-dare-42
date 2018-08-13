@@ -31,6 +31,7 @@ updateGameplay:
         call    updateWrench
         call    processCameraShake
         call    processChunkGeneration
+        call    updateWarningIndicators
         call    updatePlayer ;note: player is last on purpose.
         ret
 
@@ -51,6 +52,7 @@ initGameplay:
         call initCrates
         call initWrench
         call initScore
+        call initWarningIndicators
 
         ; Set our starting tilemap to the test chunk
         setWordImm MapAddress, TestChambers + 256

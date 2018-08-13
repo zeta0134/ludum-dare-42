@@ -121,3 +121,37 @@ CrateKicked:
         DB 255,       0,       35,       -0-3,        $00 ;hold until despawn
            ;Duration  Index  X-Offset  Y-Offset  Attributes
         DB   0,       0,        0,        0,        $00    
+
+; Primarily meant for the warning indicators on both sides
+FlashSlowly:
+            ;Duration  Index  X-Offset  Y-Offset  Attributes   
+        DB  20,       0,        0,          0,        $00
+        DB  20,       0,        0,        144,        $00
+        DB   0,       0,        0,          0,        $00
+
+FlashQuickly:
+            ;Duration  Index  X-Offset  Y-Offset  Attributes   
+        DB  10,       0,        0,          0,        $00
+        DB  10,       0,        0,        144,        $00
+        DB   0,       0,        0,          0,        $00
+
+FlashIntensely:
+            ;Duration  Index  X-Offset  Y-Offset  Attributes   
+        DB   4,       0,        2,         -1,        $10
+        DB   4,       0,       -3,          2,        $00
+        DB   4,       0,        1,         -3,        $10
+        DB   4,       0,       -0,          3,        $00
+        DB   4,       0,        2,         -1,        $10
+        DB   4,       0,       -3,          0,        $00
+        DB   4,       0,        2,         -1,        $10
+        DB   4,       0,       -1,          2,        $00
+        DB   4,       0,        2,         -0,        $10
+        DB   4,       0,       -3,          2,        $00
+        DB   4,       0,        0,         -3,        $10
+        DB   4,       0,       -2,          2,        $00
+        DB   0,       0,        0,          0,        $00
+
+Vanish:
+        ;Duration  Index  X-Offset  Y-Offset  Attributes   
+        DB  60,       0,        0,        144,        $10
+        DB   0,       0,        0,          0,        $00
