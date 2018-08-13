@@ -88,12 +88,12 @@ ItemCollect:
 
 Explosion:
            ;Duration  Index  X-Offset  Y-Offset
-        DB   8,       0,        0,         0,        $00
-        DB   8,       1,        0,         0,        $00
-        DB   4,       2,        0,         0,        $00
-        DB   4,       3,        0,         0,        $00
-        DB   4,       3,        0,         0,        $10
-        DB 255,       3,      160,         0,        $10   ; move offscreen to "vanish"
+        DB   4,       0,        0,         0,        $00
+        DB   4,       1,        0,         0,        $00
+        DB   6,       2,        0,         0,        $00
+        DB   4,       2,        0,         0,        $10
+        DB   6,       3,        0,         0,        $10
+        ; DB 255,       3,      160,         0,        $10   ; move offscreen to "vanish"
         DB   0,       0,        0,         0,        $00
 
 CrateIdle:

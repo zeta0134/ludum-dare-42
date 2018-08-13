@@ -32,6 +32,7 @@
         INCLUDE "player.asm"
         INCLUDE "score.asm"
         INCLUDE "crate.asm"
+        INCLUDE "explosion.asm"
         INCLUDE "wrench.asm"
         INCLUDE "warning.asm"
 

@@ -54,6 +54,7 @@ updateGameplay:
         call    updateMaterials
         call    updateCrates
         call    updateWrench
+        call    updateExplosions
         call    processCameraShake
         call    processChunkGeneration
         call    updateWarningIndicators
@@ -84,6 +85,7 @@ initGameplay:
         call initWrench
         call initScore
         call initWarningIndicators
+        call initExplosions
 
         call initMaterial
 
