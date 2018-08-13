@@ -109,6 +109,8 @@ setStackDE: MACRO
 ;*   bc - object address
 ;*   \1 - field offset
 ;*   \2 - data value
+;* clobbers:
+;*   hl
 setFieldByte: MACRO
         ld hl, \1
         add hl, bc

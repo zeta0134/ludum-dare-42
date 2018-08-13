@@ -847,7 +847,7 @@ setSpriteAnimation: ;cheaty mc-cheat face
 ;* output:
 ;*   bc - address
 ;* clobbers:
-;*   hl
+;*   a, hl
 ;***************************************************************************
 getSpriteAddress:
         ld hl, SpriteList
