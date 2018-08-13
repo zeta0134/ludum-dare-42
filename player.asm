@@ -414,6 +414,20 @@ updatePlayer:
         ret
 
 .checkForwardCollision:
+        ; BUGFIX - For whatever reason, the player is colliding with walls that aren't
+        ; there on chunk boundaries. If we are on a chunk boundary (ie, tile is
+        ; 0 or 15), then skip this check entirely. The player is immune.
+        push af
+        ld a, [SpriteList + SPRITE_X_POS]
+        and a, %11110000
+        swap a
+        cp 0
+        jp z, .notWall
+        cp 15
+        jp z, .notWall
+
+        pop af
+        push af
         ; we only really care about walls for now
         cp 2
         jp nz, .notWall
@@ -435,6 +449,7 @@ updatePlayer:
         ld a, 1
         ld [playerDead], a
 .notWall
+        pop af
         ret
 
 .checkHeadCollision:
