@@ -169,7 +169,7 @@ updateExplosions:
         cp b
         jp z, .noSpeedIncrease
         ; actually, let's also only increase every OTHER tile
-        bit 7, a
+        bit 0, a
         jp z, .noSpeedIncrease
         ; increase explision at 1 unit (sub) per new tile. This is HALF the player's acceleration.
         ld a, [explosionSpeed+1] ; low byte
@@ -212,12 +212,7 @@ updateExplosions:
         ld a, b
         sbc a, d
         ld d, a
-        ;de = distance (positive is behing the player)
-
-        ; DEBUG
-        ; just kidding, explosions are always visible
-        ;ld d, 0
-        ;ld e, 0
+        ;de = distance (positive is behind the player)
 
         ; First a visibility check: Is the explosion reasonably close to the player?
         ld a, d
@@ -365,6 +360,15 @@ updateExplosions:
         ld a, EXPLOSION_BASE_SPRITE + 2
         call getSpriteAddress
         setFieldByte SPRITE_Y_POS, 160
+
+        ld a, 160
+        ld [explosionParticleY+0], a
+        ld [explosionParticleY+1], a
+        ld [explosionParticleY+2], a
+        ld [explosionParticleY+3], a
+        ld [explosionParticleY+4], a
+        ld [explosionParticleY+5], a
+
         ret
 .done
 

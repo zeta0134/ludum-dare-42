@@ -311,7 +311,7 @@ updatePlayer:
         dec a
         ld [playerAccelTimer], a
         jp nz, .terminalVelocity
-        ld a, 5
+        ld a, 4
         ld [playerAccelTimer], a
         ld a, [playerSpeedY]
         sub a, 3
@@ -348,7 +348,7 @@ updatePlayer:
         ld [playerSpeedY], a
         ld hl, playerJumpTimer
         dec [hl]
-        ld a, 5
+        ld a, 1 ; decelerate immediately
         ld [playerAccelTimer], a
 .done:
         ret
@@ -388,7 +388,7 @@ updatePlayer:
         and a, KEY_A | KEY_UP
         jp nz, .endFootCollision
         ; Also refill our jump timer to max (allowing us to jump again if it was empty)
-        ld a, 15
+        ld a, 12
         ld [playerJumpTimer], a
         ; done!
         ; un-stash af and bail
