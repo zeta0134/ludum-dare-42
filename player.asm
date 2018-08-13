@@ -293,6 +293,37 @@ updatePlayer:
         ret
 
 .checkHeadCollision:
+        ; stash af
+        push af
+        ; is it a ceiling?
+        cp 3
+        jp nz, .notCeiling
+        ; ceiling tiles are only solid in their top halves.
+        ; this check detects whether the head pixel is in the top
+        ; half of its respective tile, and bails if it is not.
+        bit 3, d
+        jp nz, .notCeiling
+        ; our head is inside a ceiling tile, so we must snap our position
+        ; downwards so that our head isn't inside the tile anymore
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        inc bc
+        inc bc
+        inc bc
+        ld a, [bc] ; y-coordinate of player
+        and a, %11110000 ; erase tile index
+        or a, %00000111 ; set tile index to 8
+        ld [bc], a
+        ; also reset our vertical speed to 0:
+        ld a, 1
+        ld [playerSpeedY], a
+        ; and kill the jump timer; no hugging the ceiling!
+        ld a, 0
+        ld [playerJumpTimer], a
+        ; done!
+.notCeiling
+        ; un-stash af and bail
+        pop af
         ret
 
 
