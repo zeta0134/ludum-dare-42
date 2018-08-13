@@ -5,7 +5,8 @@ playerLastCollisionHead: DS 4
 playerLastCollisionFeet: DS 4
 playerLastCollisionWall: DS 4
 playerLastCollisionMap: DS 2
-playerSpeedX: DS 1
+playerSpeedX: DS 2
+playerSubX: DS 1
 playerSpeedY: DS 1
 playerJumpTimer: DS 1
 playerAccelTimer: DS 1
@@ -24,9 +25,12 @@ initPlayer:
         setFieldByte SPRITE_CHUNK, 0
 
         ; Initialize gameplay variables to sane values
+        ld a, 2
+        ld [playerSpeedX+0], a
         ld a, 0
-        ld [playerSpeedX], a
+        ld [playerSpeedX+1], a
         ld [playerSpeedY], a
+        ld [playerSubX], a
         ld a, 1
         ld [playerAccelTimer], a
         ; don't let the player jump in mid-air if we start them there
@@ -69,15 +73,24 @@ updatePlayer:
         inc bc
         ld a, [bc]
         ld e, a ;x coord within chunk
+        push de ;stash for now
 
+        ld a, [playerSpeedX+1] ;speed low byte
+        ld e, a
+        ld a, [playerSubX]
+        add a, e
+        ld [playerSubX], a ;add speed low byte to subX, maintain carry
+        pop de ; restore full position from earlier
         ld a, [playerSpeedX]
-        ld l, a
-        ld h, 0
-        bit 7, a
-        jp z, .positive
-        ld h, $FF
-.positive
-        add hl, de ;combined player speed and chunk index
+        adc a, e ; add player speed high byte to coordinate x, w/ carry
+        ld e, a ;result back in e
+        ld a, 0
+        adc a, d ; carry over to chunk byte
+        ld d, a
+        ; de now contains original position + player speed
+        ld h, d
+        ld l, e
+        
         dec bc
         ld a, h
         ld [bc], a ;chunk index (high byte result)
