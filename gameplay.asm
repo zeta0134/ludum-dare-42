@@ -14,8 +14,8 @@ updateGameplay:
         call    spawnObjects
         call    updateSprites
         call    displayScore
-        call    updatePlayer
         call    updateCrates
+        call    updatePlayer
         ret
 
 initGameplay:
