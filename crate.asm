@@ -18,7 +18,7 @@ initCrates:
 spawnCrate:
         ; random chance! Spawn crates about once per chunk
         ld a, [rDIV]
-        and a, %00011111
+        and a, %00001111
         jp z, .randomCheckPassed
         ret
 .randomCheckPassed
