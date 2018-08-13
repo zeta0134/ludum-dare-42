@@ -36,10 +36,6 @@
         INCLUDE "wrench.asm"
         INCLUDE "warning.asm"
 
-
-FontTileData:
-        chr_IBMPC1      1,8
-
 SpriteData:
         INCBIN "data/sprites/run_cycle.2bpp"
         INCBIN "data/sprites/tumble.2bpp"
@@ -47,9 +43,6 @@ SpriteData:
         INCBIN "data/sprites/warning.2bpp"
         INCBIN "data/sprites/crate.2bpp"
         INCBIN "data/sprites/wrench.2bpp"
-        ;INCBIN "data/sprites/double_wrench.2bpp"
-        ;INCBIN "data/sprites/bolt_up.2bpp"
-        ;INCBIN "data/sprites/bolt_down.2bpp"
         INCBIN "data/sprites/explosion.2bpp"
         INCBIN "data/sprites/numbers.2bpp"
         INCBIN "data/sprites/material1.2bpp"
@@ -58,6 +51,9 @@ SpriteData:
         INCBIN "data/sprites/material4.2bpp"
         INCBIN "data/sprites/station.2bpp"
         INCBIN "data/sprites/station_building.2bpp"
+        INCBIN "data/sprites/double_wrench.2bpp"
+        INCBIN "data/sprites/bolt_up.2bpp"
+        INCBIN "data/sprites/bolt_down.2bpp"
 
 SpaceStationTiles:
         INCBIN "data/tiles/title.2bpp"
@@ -70,9 +66,9 @@ TestChambers:
         INCLUDE "data/path_widens_ca.map"       ; 3
         INCLUDE "data/path_split_ab.map"        ; 4
         INCLUDE "data/path_split_ba.map"        ; 5
-        ; INCLUDE "data/split_lower_jump_bb.map"  ; 6
-        ; INCLUDE "data/plain_step_aa.map"        ; 7
-        ; INCLUDE "data/pointy_new_hallway_cb.map"; 8
+        INCLUDE "data/split_lower_jump_bb.map"  ; 6
+        INCLUDE "data/plain_step_aa.map"        ; 7
+        INCLUDE "data/pointy_new_hallway_cb.map"; 8
 
 begin:
         di

@@ -16,8 +16,8 @@ chunkAttributes:
         DB 4, "AB", 0 ; path split 1
         DB 2, "AC", 0 ; path narrows
         DB 5, "BA", 0 ; path split 2
-        DB 1, "AA", 0 ; plain
-        DB 1, "AA", 0 ; plain
-        DB 1, "AA", 0 ; plain
+        DB 6, "BB", 0 ; plain
+        DB 7, "AA", 0 ; plain
+        DB 8, "CB", 0 ; plain
         DB 4, "AB", 0 ; path split 1
         DB 1, "AA", 0 ; plain                       the table to a power of 2
