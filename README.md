@@ -12,7 +12,7 @@ Once we have a release up on GitHub, you can download the ROM from the releases 
 
 ## How do I build it?
 
-This project is built with the [RGBDS toolchain](https://github.com/rednex/rgbds) and requires a `make`. Install RGBDS and run `make` in the root directory. This will produce . `.gb` file which you can run in an emulator or your own Gameboy with the proper hardware.
+This project is built with the [RGBDS toolchain](https://github.com/rednex/rgbds) and requires a `make`. Install RGBDS and run `make` in the root directory. This will produce a `.gb` file which you can run in an emulator or your own Gameboy with the proper hardware.
 
 ## Why would you do this?
 
