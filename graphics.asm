@@ -426,7 +426,8 @@ updateSprites:
         cp 0
         jp nz, .active
 .inactive
-        inc hl  ; move to the start of the next entry (+1 byte from here)
+        inc hl  ; move to the start of the next entry (+2 bytes from here)
+        inc hl  
         push hl ; replace de with hl contents using the stack
         pop de
         pop bc
