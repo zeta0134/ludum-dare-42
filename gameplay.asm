@@ -9,7 +9,17 @@ chunkBuffer: DS 256
 spawnCounter: DS 1
 deathChunk: DS 1
 lastChunkExitType: DS 1
+cameraShakeTimer: DS 1
+cameraShakeIntensity: DS 1
+chunksToGenerate: DS 1
+chunkCooldownTimer: DS 1
         POPS
+
+CAMERA_SHAKE_DISABLED EQU %00000000
+CAMERA_SHAKE_BUMPY EQU %00000001
+CAMERA_SHAKE_TURBULANT EQU %00000011
+CAMERA_SHAKE_INTENSE EQU %00000111
+CAMERA_SHAKE_APOCALYPTIC EQU %00001111
 
 updateGameplay:
         call    updateChunks
@@ -19,6 +29,8 @@ updateGameplay:
         call    displayScore
         call    updateCrates
         call    updateWrench
+        call    processCameraShake
+        call    processChunkGeneration
         call    updatePlayer ;note: player is last on purpose.
         ret
 
@@ -80,16 +92,16 @@ initGameplay:
         ; kinds of chunks we'll generate ahead of it
         ld a, "A"
         ld [lastChunkExitType], a
+        ld a, 0
+        ld [chunksToGenerate], a
+        ld [chunkCooldownTimer], a
+
+        ; sensible camera shake states, please
+        ld a, 0
+        ld [cameraShakeIntensity], a
+        ld [cameraShakeTimer], a
 
         ; generate a few chunks to get the player started
-        call generateNewChunk
-        call generateNewChunk
-        call generateNewChunk
-        call generateNewChunk
-        call generateNewChunk
-        call generateNewChunk
-        call generateNewChunk
-        call generateNewChunk
         call generateNewChunk
         call generateNewChunk
         call generateNewChunk
@@ -195,6 +207,34 @@ spawnObjects:
         jp hl
         ; implied ret
 
+processChunkGeneration:
+        ld a, [chunkCooldownTimer]
+        cp 0
+        jp z, .checkGeneration
+        dec a
+        ld [chunkCooldownTimer], a
+        ret
+.checkGeneration
+        ld a, [chunksToGenerate]
+        cp 0
+        jp nz, .generateOneChunk
+        ret
+.generateOneChunk
+        call generateNewChunk
+        ; cooldown timer is primarily for artistic effect
+        ld a, 30
+        ld [chunkCooldownTimer], a
+        ; show chunk building progress visually with a bit of screen shake
+        ld a, CAMERA_SHAKE_TURBULANT
+        ld [cameraShakeIntensity], a
+        ld a, 8
+        ld [cameraShakeTimer], a
+        ; decrement the counter; we generated the chunk
+        ld hl, chunksToGenerate
+        dec [hl]
+        ; that's enough of that
+        ret
+
 generateNewChunk:
         ; grab a random value
         ld a, [rDIV]
@@ -250,4 +290,30 @@ generateNewChunk:
         ld a, e
         ld [lastChunkExitType], a
         ; and done!
+        ret
+
+processCameraShake:
+        ld a, [cameraShakeTimer]
+        cp 0
+        jp nz, .getShaking
+        ld hl, TargetCameraY + 1
+        ld a, 16
+        ld [hl], a
+        ret
+.getShaking
+        ld a, [rDIV]
+        ld b, a
+        ld a, [cameraShakeIntensity]
+        and a, b
+        add a, 16 ; base + random
+        ld b, a ;stash
+        ld a, [cameraShakeIntensity]
+        sra a ; half the intensity
+        ld c, a
+        ld a, b
+        sub a, c ; a = base + random - (intensity / 2)
+        ld hl, TargetCameraY + 1
+        ld [hl], a
+        ld hl, cameraShakeTimer
+        dec [hl]
         ret

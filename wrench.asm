@@ -3,13 +3,11 @@
 debugWrench: DS 4
 debugWrenchActive: DS 1
 wrenchState: DS 1
-wrenchCollectTimer: DS 1
         POPS
 
 initWrench:
         ld a, 0
         ld [wrenchState], a
-        ld [wrenchCollectTimer], a
         ld a, "W"
         ld [debugWrench+0], a
         ld [debugWrench+1], a
@@ -189,12 +187,16 @@ updateWrench:
         ld bc, ItemCollect
         call setSpriteAnimation
 
-        ; DO THE THINGS ON COLLECT!!!!!
-        ; STUB
-
         ; mark ourselves as "active" so we don't collide again next frame
         ld a, 1
         ld [wrenchState], a
+
+        ; generate 4 new chunks for the player
+        ld a, [chunksToGenerate]
+        add a, 4
+        ld [chunksToGenerate], a
+        ld a, 30
+        ld [chunkCooldownTimer], a
 
         ; done!
 
