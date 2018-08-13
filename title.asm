@@ -113,6 +113,9 @@ displayHighScore:
 
 
 updateTitleScreen:
+        ld      a,$e4      ; Standard gradient
+        ld      [rBGP],a
+        
         call updateSprites
         ld a, [keysUp]
         and a, KEY_START

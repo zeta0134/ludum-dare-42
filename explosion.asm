@@ -95,6 +95,39 @@ initExplosions:
         ret
 
 updateExplosions:
+        ; determine the distance between the player and the explosion horizon
+        ; How far away is the explosion from the player? Ignore sub speed here
+        ld hl, SpriteList + SPRITE_CHUNK
+        ld b, [hl]
+        ld hl, SpriteList + SPRITE_X_POS
+        ld c, [hl]
+        ; bc = player's chunk + x coordinate
+        ld hl, explosionChunk
+        ld d, [hl]
+        ld hl, explosionPos
+        ld e, [hl]
+        ; de = explosion chunk + x coordinate
+        ; 16-bit subtraction
+        ld a, c
+        sub a, e
+        ld e, a
+        ld a, b
+        sbc a, d
+        ld d, a
+        ;de = distance (positive is behing the player)
+
+        ; If the explosion distance is negative, you died! Too bad.
+        bit 7, d
+        jp z, .notDead
+        ; set animation state to "tumble" (this looks roughly like crouching)
+        ld a, 0
+        ld bc, StaticAnimation
+        call setSpriteAnimation
+        setFieldByte SPRITE_TILE_BASE, 6
+        ; Tell the player that they're dead
+        ld a, 1
+        ld [playerDead], a
+.notDead
         ; Calculate new explosion position based on current speed
         ld hl, explosionChunk
         ld d, [hl]
