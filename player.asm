@@ -12,6 +12,7 @@ playerJumpTimer: DS 1
 playerAccelTimer: DS 1
 playerDeathTimer: DS 1
 playerDead: DS 1
+lastPlayerTile: DS 1
         POPS
 
 initPlayer:
@@ -159,6 +160,29 @@ updatePlayer:
         pop de
         pop bc
 
+        ; adjust the player's speed. 
+        ;Max speed is 6 (px per frame)
+        ld a, [playerSpeedX]
+        sub a, 5
+        bit 7, a
+        jp z, .noSpeedIncrease
+        ; increase the sub-speed w/ carry once per column. (+4)
+        ld a, [lastPlayerTile]
+        ld b, a
+        ld a, [lastRightmostTile]
+        cp b
+        jp z, .noSpeedIncrease
+        ld a, [playerSpeedX+1]
+        add a, 2
+        ld [playerSpeedX+1], a
+        ld a, [playerSpeedX]
+        adc a, 0
+        ld [playerSpeedX], a
+
+.noSpeedIncrease
+        ld a, [lastRightmostTile]
+        ld [lastPlayerTile], a
+
         ; handle trivial matters like gravitational forces and space-time
         ld a, [playerAccelTimer]
         dec a
@@ -181,8 +205,8 @@ updatePlayer:
 
 
         ; handle player input
-        ld a, 2
-        ld [playerSpeedX], a
+        ;ld a, 2
+        ;ld [playerSpeedX], a
 ; Note: pretty much all the D-pad checks are for debug only
 .checkRight:
         ld a, [keysHeld]
