@@ -549,6 +549,9 @@ processChunkGeneration:
         ld [cameraShakeIntensity], a
         ld a, 8
         ld [cameraShakeTimer], a
+        ; throw some materials across the screen to show the building
+        ld a, 5
+        ld [remainingMaterials], a
         ; decrement the counter; we generated the chunk
         ld hl, chunksToGenerate
         dec [hl]
