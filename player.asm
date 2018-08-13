@@ -328,21 +328,6 @@ updatePlayer:
 
 
         ; handle player input
-        ;ld a, 2
-        ;ld [playerSpeedX], a
-; Note: pretty much all the D-pad checks are for debug only
-.checkRight:
-        ld a, [keysHeld]
-        and a, KEY_RIGHT
-        jp z, .checkLeft
-        ld a, 1
-        ld [playerSpeedX], a
-.checkLeft:
-        ld a, [keysHeld]
-        and a, KEY_LEFT
-        jp z, .checkJump
-        ld a, -1
-        ld [playerSpeedX], a
 .checkJump:
         ; firstly, if A was just *released*, then zero out our jump timer. No double-jumping!
         ld a, [keysUp]
