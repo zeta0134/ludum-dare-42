@@ -246,7 +246,7 @@ updateMaterials:
         ld [hl], a
         jp .finishedSettingProperties
 .spawnOnBottom
-        ld a, 144 + 16
+        ld a, 144
         ld [hl+], a  ; Start on bottom
         ld a, 0
         ld [hl+], a  ; No horizontal velocity
@@ -289,6 +289,11 @@ updateMaterials:
         dec hl
         dec hl
         dec hl
+        ; show chunk building progress visually with a bit of screen shake
+        ld a, CAMERA_SHAKE_TURBULANT
+        ld [cameraShakeIntensity], a
+        ld a, 8
+        ld [cameraShakeTimer], a
 .stillAlive                         ; }
         ld a, [hl]
         cp 0                        ; if (x == 0)  // I.e. material slot is empty
@@ -352,96 +357,6 @@ updateMaterials:
         sub a, MATERIAL_SPRITE_BASE + 5  ; if (spriteIndex == MATERIAL_SPRITE_BASE + 5)
         jp z, .done                      ;   end loop
         jp .updateLoop                   ; else repeat
-
-;;;;;;;;;;;;;;;;;
-;         ; Grab the X coordinate
-;         ld a, [hl]
-;         ; Check if it's off screen and kill it if it is
-;         sub a, 160
-;         jp c, .stillAlive
-;         ld a, 0
-;         ld [hl+], a
-;         ld [hl+], a
-;         ld [hl+], a
-;         ld [hl+], a
-; .stillAlive
-;         ; If X is zero, it's not active, so skip it.
-;         ld a, [hl]
-;         cp 0
-;         jp z, .advanceToNextMaterialPropertiesToUpdate
-;         ; Set the sprite to match the X coordinate
-;         push hl
-;         setFieldByte SPRITE_X_POS, a
-;         pop hl
-;         inc hl
-;         inc hl
-;         ; Save the X coordinate in d.
-;         ld d, a
-;         ; Load the X velocity
-;         ld a, [hl]
-;         ; Apply acceleration and save the new velocity
-;         add a, BUILDING_MATERIAL_ACCELERATION
-;         ld [hl], a
-;         srl a
-;         srl a
-;         srl a
-;         srl a
-;         ; Apply velocity and save the new X position
-;         add a, d
-;         dec hl
-;         dec hl
-;         ld [hl], a
-
-;         inc hl
-;         ; Grab the Y coordinate
-;         ld a, [hl]
-;         ; Set the sprite to match the Y coordinate
-;         push hl
-;         setFieldByte SPRITE_Y_POS, a
-;         pop hl
-;         inc hl
-;         inc hl
-;         ; Save the Y coordinate in d
-;         ld d, a
-;         ; Load the Y velocity
-;         ld a, [hl]
-;         sra a
-;         sra a
-;         ; Apply the velocity and save the new Y position
-;         add a, d
-;         dec hl
-;         dec hl
-;         ld [hl-], a
-
-;         ; hl is now at the X material attribute
-;         ld a, [hl]
-;         ; If this material is off screen, empty out the values
-;         sub a, 160
-;         ; jp c, .updateLoopPrepForNextIteration
-;         jp c, .advanceToNextMaterialPropertiesToUpdate
-;         ld a, 0
-;         ld [hl+], a
-;         ld [hl+], a
-;         ld [hl+], a
-;         ld [hl+], a
-;         jp .updateLoopPrepForNextIteration
-; .advanceToNextMaterialPropertiesToUpdate
-;         inc hl
-;         inc hl
-;         inc hl
-;         inc hl
-; .updateLoopPrepForNextIteration
-;         ld a, e
-;         sub a, MATERIAL_SPRITE_BASE + 4
-;         jp z, .done
-
-;         ld a, e
-;         inc a
-;         ld e, a
-;         push hl
-;         call getSpriteAddress
-;         pop hl
-;         jp .updateLoop
 
 .done
         ret
@@ -544,13 +459,8 @@ processChunkGeneration:
         ; cooldown timer is primarily for artistic effect
         ld a, 30
         ld [chunkCooldownTimer], a
-        ; show chunk building progress visually with a bit of screen shake
-        ld a, CAMERA_SHAKE_TURBULANT
-        ld [cameraShakeIntensity], a
-        ld a, 8
-        ld [cameraShakeTimer], a
         ; throw some materials across the screen to show the building
-        ld a, 5
+        ld a, 1
         ld [remainingMaterials], a
         ; decrement the counter; we generated the chunk
         ld hl, chunksToGenerate
