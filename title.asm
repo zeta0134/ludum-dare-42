@@ -12,6 +12,15 @@ initTitleScreen:
         call    StopLCD
         setWordImm MapAddress, titleMapData
 
+        ld      a,$e4      ; Standard gradient
+        ld      [rBGP],a
+
+        ; set blank tile to be black in this palette
+        ld a, $ff
+        ld hl, $9000
+        ld bc, 16 * 4
+        call  mem_Set
+
         ; set our scroll position
         setWordImm TargetCameraX, 0 
         setWordImm TargetCameraY, 16

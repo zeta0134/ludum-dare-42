@@ -1,7 +1,7 @@
 CHUNK_ENTRANCE EQU 0
 CHUNK_EXIT EQU 0
-CHUNK_TOTAL EQU 8 ; note: should be a power of two!
-CHUNK_MASK EQU %00000111 ; used for quick loop iteration
+CHUNK_TOTAL EQU %00001000 ; (8) note: should be a power of two!
+CHUNK_MASK  EQU %00000111 ; used for quick loop iteration
 
 chunkAttributes:
         ; Index, Entrance, Exit, Dummy (power of 2)
