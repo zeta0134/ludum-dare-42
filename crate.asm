@@ -7,13 +7,12 @@ debugFoundSlot: DS 1
 ;* Attempts to spawn a crate in the right-most column (currently just offscreen)
 ;* Spawning conditions: same tile as either a floor or a floaty platform.
 spawnCrate:
-        ld a, $74
-        ld [debugCrateMarker+0], a
-        ld [debugCrateMarker+1], a
-        ld [debugCrateMarker+2], a
-        ld [debugCrateMarker+3], a
-        ld a, -1
-        ld [debugFoundSlot], a
+        ; random chance! Spawn crates about once per chunk
+        ld a, [rDIV]
+        and a, %00001111
+        jp z, .randomCheckPassed
+        ret
+.randomCheckPassed
         ;* Crates are stored in sprite slots 4-6. Find an empty one, or bail.
         ld hl, SpriteList + (13 * 4) + SPRITE_ACTIVE
         ld b, 4
