@@ -1,6 +1,8 @@
 
         PUSHS           
         SECTION "Gameplay WRAM",WRAM0
+SCORE_X EQU 63
+
 chunkMarkers: DS 4
 lastSpawnTile: DS 1
 lastRightmostTile: DS 1
@@ -93,6 +95,7 @@ initGameplay:
         call initPlayer
         call initCrates
         call initWrench
+        ld a, SCORE_X
         call initScore
         call initWarningIndicators
         call initExplosions

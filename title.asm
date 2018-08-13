@@ -1,7 +1,14 @@
 titleMapData:
         INCLUDE "data/title.map"
 
+        PUSHS           
+        SECTION "Title WRAM",WRAM0
+HIGH_SCORE_X EQU 126
+highScore: DS 3
+
 SHIP_Y EQU 118
+        POPS
+
 
 initTitleScreen:
         call    initOAM
@@ -77,6 +84,11 @@ initTitleScreen:
         setFieldByte SPRITE_TILE_BASE, 0
         setFieldByte SPRITE_HUD_SPACE, 1
 
+        call updateHighScore
+        ld a, HIGH_SCORE_X
+        call initScore
+        call displayHighScore
+
         ;* set our update function for the next game loop
         ld hl, updateTitleScreen
         setWordHL currentGameState
@@ -88,6 +100,17 @@ initTitleScreen:
 
         ; for the title screen, that's it!
         ret
+
+displayHighScore:
+        ld hl, shadowOAM + 34 * 4 + 2
+        ld a, [highScore]
+        call displayScoreByte
+        ld a, [highScore + 1]
+        call displayScoreByte
+        ld a, [highScore + 2]
+        call displayScoreByte
+        ret
+
 
 updateTitleScreen:
         call updateSprites
