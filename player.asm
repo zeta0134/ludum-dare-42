@@ -63,9 +63,54 @@ updatePlayer:
         jp nz, .deathLimbo
         call initTitleScreen
 .deathLimbo
+        ; depending on the nature of our demise, we may still want to move right
+        ld a, [SpriteList + SPRITE_CHUNK]
+        ld b, a
+        ld a, [deathChunk];
+        cp b
+        jp z, .floatOffIntoTheDistance
+        ret
+.floatOffIntoTheDistance
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        ld hl, SPRITE_X_POS
+        add hl, bc
+        inc [hl]
+        ld a, [hl]
+        and %00000011
+        jp nz, .doneBeingDead
+        ld hl, TargetCameraX + 1
+        inc [hl]
+.doneBeingDead
         ret
 
 .notDead
+        ; Have we entered the death chunk?
+        ld a, [SpriteList + SPRITE_CHUNK]
+        ld b, a
+        ld a, [deathChunk];
+        cp b
+        jp nz, .notOutOfTheWoodsYet
+
+        ; MOST unfortunate. Set the player's speed to a zombie shuffle, and
+        ; switch them to the floaty space bob animation of eventual asphyxiation
+        ld hl, playerSpeedX
+        ld a, 0
+        ld [hl+], a
+        ld a, 32
+        ld [hl], a
+        ld a, 1
+        ld [playerDead], a
+        ld a, 255
+        ld [playerDeathTimer], a
+        ld a, 0
+        ld bc, PlayerFloatsInSpace
+        call spawnSprite
+        setFieldByte SPRITE_TILE_BASE, 6
+        ; since we just died, go ahead and stop processing here
+        ret
+
+.notOutOfTheWoodsYet
         ; if we're tumbling, decrement that timer, and optionally deal with the animation
         ld a, [playerTumbleTimer]
         cp 0

@@ -44,6 +44,18 @@ PlayerTumble:
         DB  10,       2,        0,        2,        $10
         DB   0,       0,        0,        0,        $00
 
+PlayerFloatsInSpace:
+        DB  15,       0,        0,        -1,        $00
+        DB  20,       0,        0,        -2,        $00
+        DB  15,       0,        0,        -1,        $00
+        DB  10,       0,        0,         0,        $00
+        DB  10,       0,        0,         0,        $00
+        DB  15,       0,        0,         1,        $00
+        DB  20,       0,        0,         2,        $00
+        DB  15,       0,        0,         1,        $00
+        DB  10,       0,        0,         0,        $00
+        DB  10,       0,        0,         0,        $00
+        DB   0,       0,        0,         0,        $00
 
 ItemBobLightPal:
            ;Duration  Index  X-Offset  Y-Offset
@@ -63,14 +75,14 @@ ItemBobDarkPal:
 
 ItemCollect:
            ;Duration  Index  X-Offset  Y-Offset
-        DB   5,       0,        0,        -1,        $00
-        DB   5,       0,        0,        -2,        $10
-        DB   5,       0,        0,        -3,        $00
-        DB   5,       0,        0,        -4,        $10
-        DB   5,       0,        0,        -5,        $00
-        DB   5,       0,        0,        -6,        $10
-        DB   5,       0,        0,        -7,        $00
-        DB   5,       0,        0,        -8,        $10
+        DB   4,       0,        0,        -2,        $00
+        DB   4,       0,        0,        -4,        $00
+        DB   4,       0,        0,        -6,        $10
+        DB   4,       0,        0,        -8,        $10
+        DB   4,       0,        0,       -10,        $00
+        DB   4,       0,        0,       -12,        $00
+        DB   4,       0,        0,       -14,        $10
+        DB   4,       0,        0,       -16,        $10
         DB 255,       0,        0,       144,        $10 ;offscreen with ye!
         DB   0,       0,        0,         0,        $00
 

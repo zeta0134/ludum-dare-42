@@ -25,6 +25,15 @@ initScore:
         ret
 
 increaseScore:
+        ; If we're in the death chunk, don't increase the score. (Otherwise the cutscene)
+        ; that plays gives us free points
+        ld a, [SpriteList + SPRITE_CHUNK]
+        ld b, a
+        ld a, [deathChunk];
+        cp b
+        jp nz, .proceed
+        ret
+.proceed
         ld hl, score + 2
         ld a, [hl]
         add a, 1

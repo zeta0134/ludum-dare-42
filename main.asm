@@ -61,9 +61,12 @@ SpaceStationTiles:
         INCBIN "data/tiles/space_station.2bpp"
 
 TestChambers:
-        INCLUDE "data/test_chamber3.map"
-        INCLUDE "data/test_chamber.map"
-        INCLUDE "data/test_chamber2.map"
+        INCLUDE "data/end_of_the_road.map"
+        INCLUDE "data/plain_aa.map"
+        INCLUDE "data/path_narrows_ac.map"
+        INCLUDE "data/path_widens_ca.map"
+        INCLUDE "data/path_split_ab.map"
+        INCLUDE "data/path_split_ba.map"
 
 begin:
         di

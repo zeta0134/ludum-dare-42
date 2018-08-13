@@ -7,6 +7,7 @@ lastRightmostTile: DS 1
 currentChunk: DS 1
 chunkBuffer: DS 256
 spawnCounter: DS 1
+deathChunk: DS 1
         POPS
 
 updateGameplay:
@@ -39,7 +40,7 @@ initGameplay:
         call initScore
 
         ; Set our starting tilemap to the test chunk
-        setWordImm MapAddress, TestChambers
+        setWordImm MapAddress, TestChambers + 256
         ; set our scroll position
         setWordImm TargetCameraX, 0 
         setWordImm TargetCameraY, 16
@@ -57,26 +58,24 @@ initGameplay:
         ld bc, 256
         call mem_Set
 
-        ; write some test chunks
+        ; initialize the chunk buffer with all death planes
         ld b, 0
-        ld a, 0
         ld hl, chunkBuffer
 .chunkInitLoop
-        ld [hl], a
-        inc a
+        ld [hl], 0
         inc hl
         inc b
-        jp z, .done
-        cp a, 3
         jp nz, .chunkInitLoop
-        ld a, 0
-        jp .chunkInitLoop
-.done
 
+        ; starting area gets some lovely plains
         ld a, 1
+        ld [chunkBuffer+0], a
         ld [chunkBuffer+1], a
+
+        ; We only have two chunks to start with, so set the death barrier there:
         ld a, 2
-        ld [chunkBuffer+2], a
+        ld [deathChunk], a
+
         ; debug
         ld a, 66
         ld [chunkMarkers+0], a
@@ -172,3 +171,4 @@ spawnObjects:
         ld l, a
         jp hl
         ; implied ret
+
