@@ -61,6 +61,19 @@ ItemBobDarkPal:
         DB  16,       0,        0,         0,        $10
         DB   0,       0,        0,         0,        $00
 
+ItemCollect:
+           ;Duration  Index  X-Offset  Y-Offset
+        DB   5,       0,        0,        -1,        $00
+        DB   5,       0,        0,        -2,        $10
+        DB   5,       0,        0,        -3,        $00
+        DB   5,       0,        0,        -4,        $10
+        DB   5,       0,        0,        -5,        $00
+        DB   5,       0,        0,        -6,        $10
+        DB   5,       0,        0,        -7,        $00
+        DB   5,       0,        0,        -8,        $10
+        DB 255,       0,        0,       144,        $10 ;offscreen with ye!
+        DB   0,       0,        0,         0,        $00
+
 Explosion:
            ;Duration  Index  X-Offset  Y-Offset
         DB   8,       0,        0,         0,        $00

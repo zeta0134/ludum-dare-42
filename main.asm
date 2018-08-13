@@ -31,6 +31,7 @@
         INCLUDE "player.asm"
         INCLUDE "score.asm"
         INCLUDE "crate.asm"
+        INCLUDE "wrench.asm"
 
 
 FontTileData:

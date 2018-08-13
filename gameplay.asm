@@ -6,6 +6,7 @@ lastSpawnTile: DS 1
 lastRightmostTile: DS 1
 currentChunk: DS 1
 chunkBuffer: DS 256
+spawnCounter: DS 1
         POPS
 
 updateGameplay:
@@ -15,7 +16,8 @@ updateGameplay:
         call    updateSprites
         call    displayScore
         call    updateCrates
-        call    updatePlayer
+        call    updateWrench
+        call    updatePlayer ;note: player is last on purpose.
         ret
 
 initGameplay:
@@ -33,23 +35,8 @@ initGameplay:
 
         call initPlayer
         call initCrates
+        call initWrench
         call initScore
-
-        ld a, 1
-        ld bc, ItemBobDarkPal
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 40
-        setFieldByte SPRITE_Y_POS, 66
-        setFieldByte SPRITE_TILE_BASE, 12
-        setFieldByte SPRITE_CHUNK, 1
-
-        ld a, 2
-        ld bc, ItemBobDarkPal
-        call spawnSprite
-        setFieldByte SPRITE_X_POS, 60
-        setFieldByte SPRITE_Y_POS, 66
-        setFieldByte SPRITE_TILE_BASE, 13
-        setFieldByte SPRITE_CHUNK, 2
 
         ; Set our starting tilemap to the test chunk
         setWordImm MapAddress, TestChambers
@@ -142,6 +129,27 @@ updateChunks:
         ld [lastRightmostTile], a
         ret
 
+;* finds and returns the pointer to the top most tile in the active map, in the
+;* column that is presently being drawn on the right side of the screen.
+activeMapActiveColumn:
+        ld hl, chunkBuffer
+        ld d, 0
+        ld a, [currentChunk]
+        ld e, a
+        add hl, de
+        ld a, [hl]
+        ld b, a ; b now contains the map number
+        ld a, [lastRightmostTile]
+        ld c, a
+        ; bc now contains chunk offset + column-offset
+        ld hl, TestChambers
+        add hl, bc
+        ; we're done; Y = 0 here, so hl now points to the top of the active column
+        ret
+
+spawnTable:
+        DW spawnCrate, spawnWrench
+
 spawnObjects:
         ld a, [lastSpawnTile]
         ld b, a
@@ -151,6 +159,16 @@ spawnObjects:
         ret
 .tileChanged
         ld [lastSpawnTile], a
-        ; for now, always spawn crates
-        call spawnCrate
-        ret
+        ld a, [rDIV]
+        and a, %00000001
+        sla a
+        ld hl, spawnTable
+        ld d, 0
+        ld e, a
+        add hl, de ;hl now contains pointer to selected spawning function in memory
+        ld a, [hl+]
+        ld b, [hl]
+        ld h, b
+        ld l, a
+        jp hl
+        ; implied ret

@@ -1,49 +1,40 @@
         PUSHS           
-        SECTION "Crate WRAM",WRAM0
-debugCrateMarker: DS 4
-debugFoundSlot: DS 1
-crateState: DS 3
+        SECTION "Wrench WRAM",WRAM0
+debugWrench: DS 4
+debugWrenchActive: DS 1
+wrenchState: DS 1
+wrenchCollectTimer: DS 1
         POPS
 
-initCrates:
-        ld hl, crateState
+initWrench:
         ld a, 0
-        ld [hl+], a
-        ld [hl+], a
-        ld [hl+], a
+        ld [wrenchState], a
+        ld [wrenchCollectTimer], a
+        ld a, "W"
+        ld [debugWrench+0], a
+        ld [debugWrench+1], a
+        ld [debugWrench+2], a
+        ld [debugWrench+3], a
         ret
 
 ;* Attempts to spawn a crate in the right-most column (currently just offscreen)
 ;* Spawning conditions: same tile as either a floor or a floaty platform.
-spawnCrate:
+spawnWrench:
         ; random chance! Spawn crates about once per chunk
         ld a, [rDIV]
-        and a, %00000111
+        and a, %00001111
         jp z, .randomCheckPassed
-        ret
+        ;ret
 .randomCheckPassed
-        ;* Crates are stored in sprite slots 4-6. Find an empty one, or bail.
-        ld hl, SpriteList + (13 * 4) + SPRITE_ACTIVE
-        ld b, 4
+        ;* The wrench is stored in sprite slot 1
+        ld hl, (SpriteList + 13 + SPRITE_ACTIVE)
         ld a, [hl]
+        ld [debugWrenchActive], a
         cp 0
-        jp z, .foundFreeSlot ; slot 4
-        ld de, 13
-        add hl, de
-        inc b
-        ld a, [hl]
-        cp 0
-        jp z, .foundFreeSlot ; slot 5
-        add hl, de
-        inc b
-        ld a, [hl]
-        cp 0
-        jp z, .foundFreeSlot ; slot 6
-        ; no free slots for crates! bail.
+        jp z, .wrenchNotActive
+        ; there's already a wrench spawned! Bail.
         ret
-.foundFreeSlot
-        ld a, b
-        ld [debugFoundSlot], a
+.wrenchNotActive
         push bc ; stash slot index
         ; figure out the starting tile 
         call activeMapActiveColumn ; hl = top of active column
@@ -59,10 +50,25 @@ spawnCrate:
         adc a, h
         ld h, a
         ld a, [hl] ; a now contains collision type
+        cp COLLISION_AIR
+        jp nz, .notAir
+        ; wrenches require an air space 2 tiles above a floor space.
+        ; advance two tiles forward in memory
+        pop hl  ; grab our current tile index again
+        push hl
+        add hl, bc
+        add hl, bc ; skip ahead two tiles
+        ld a, [hl] ; a contains a floor tile
+        ld hl, collisionLUT
+        add a, l
+        ld l, a
+        ld a, 0
+        adc a, h
+        ld h, a
+        ld a, [hl] ; a now contains collision type
         cp COLLISION_FLOOR
-        jp z, .foundFloor
-        cp COLLISION_PLATFORM
-        jp z, .foundFloor
+        jp z, .foundSpawnPoint
+.notAir
         pop hl
         add hl, bc
         push hl
@@ -74,7 +80,7 @@ spawnCrate:
         pop hl ;clear hl stash
         pop hl ;clear bc stash
         ret
-.foundFloor
+.foundSpawnPoint
         ; pop hl to clear the map column index
         pop hl
         ; pop again; a now contains sprite slot, pointing to ACTIVE
@@ -84,9 +90,10 @@ spawnCrate:
         ; stash this (I don't remember if item spawning clobbers de; it probably does)
         push de
 
-        ld bc, CrateIdle
+        ld a, 1
+        ld bc, ItemBobDarkPal
         call spawnSprite
-        setFieldByte SPRITE_TILE_BASE, 11
+        setFieldByte SPRITE_TILE_BASE, 12
         ; bc now points to start of sprite entry
         ld hl, SPRITE_Y_POS
         add hl, bc
@@ -104,13 +111,13 @@ spawnCrate:
         ld a, [currentChunk]
         ld [hl], a
 
-        ;* STUB
+        ld a, 0
+        ld [wrenchState], a
+
         ret
 
-updateCrates:
-        ld e, 4
-.loop
-        ld a, e
+updateWrench:
+        ld a, 1
         call getSpriteAddress ;bc = address to ourselves
         ;* Are we offscreen to the left? If so, die an honorable death.
         ld hl, SPRITE_CHUNK
@@ -124,18 +131,12 @@ updateCrates:
         bit 7, a
         jp z, .die
         ; are we in a state where we can collide with the player?
-        ld hl, crateState - 4
-        ld d, 0
-        add hl, de
-        ld a, [hl]
+        ld a, [wrenchState]
         cp 0
         jp z, .checkPlayerCollision
-        push de
-        jp .noCollision
-
+        ret 
 .checkPlayerCollision
         ;* Is the player colliding with us?
-        push de; stash counter
         ld hl, SPRITE_CHUNK
         add hl, bc
         ld a, [hl]
@@ -182,56 +183,22 @@ updateCrates:
         cp a, e
         jp nz, .noCollision
         ; if we got here, the player's tile coordinates overlap ours.
-        ; proceed to kick ourselves!
+        ; proceed to do something fancy!
 
-        pop de
-        push de
-        ld a, e
-        ld bc, CrateKicked
+        ld a, 1
+        ld bc, ItemCollect
         call setSpriteAnimation
 
-        ; slow down the player
-        ld a, [playerSpeedX+0]
-        sub 3
-        bit 7, a
-        jp nz, .lowSpeedLimit
-        ld a, [playerSpeedX+0]
-        dec a
-        ld [playerSpeedX+0], a
-        jp .doneWithSpeed
-.lowSpeedLimit
-        ; we're already going close to the speed minimum (speed <= 2) so just
-        ; clear out the sub speed. That way the player can't ever end up going
-        ; backwards from hitting a bunch of crates in a row.
-        ld a, 0
-        ld [playerSpeedX+1], a
-.doneWithSpeed
-
-        ; set the player's animation to tumble, and set their tumble timer
-        ld a, 0
-        ld bc, PlayerTumble
-        call spawnSprite
-        setFieldByte SPRITE_TILE_BASE, 6
-        ld a, 30
-        ld [playerTumbleTimer], a
+        ; DO THE THINGS ON COLLECT!!!!!
+        ; STUB
 
         ; mark ourselves as "active" so we don't collide again next frame
-        pop de
-        push de
-        ld d, 0
-        ld hl, crateState - 4
-        add hl, de
         ld a, 1
-        ld [hl], a
+        ld [wrenchState], a
 
         ; done!
 
 .noCollision
-        pop de ; un-stash counter
-        inc e
-        ld a, e
-        cp 7
-        jp nz, .loop
         ret
 .die
         ; bc still contains sprite index to de-spawn
@@ -240,17 +207,8 @@ updateCrates:
         ld a, 0
         ld [hl], a
         ; mark ourselves as inactive, so the next spawn can collide
-        ld d, 0
-        ld hl, crateState - 4
-        add hl, de
         ld a, 0
-        ld [hl], a
+        ld [wrenchState], a
 
         ; and we're done
-        inc e
-        ld a, e
-        cp 7
-        jp nz, .loop
         ret
-
-
