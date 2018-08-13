@@ -1,5 +1,10 @@
         PUSHS           
         SECTION "Player WRAM",WRAM0
+playerDebugMarkers: DS 4
+playerLastCollisionHead: DS 4
+playerLastCollisionFeet: DS 4
+playerLastCollisionWall: DS 4
+playerLastCollisionMap: DS 2
 playerSpeedX: DS 1
 playerSpeedY: DS 1
 playerJumpTimer: DS 1
@@ -33,6 +38,13 @@ initPlayer:
         ; transitioning to a gameover screen
         ld a, 60
         ld [playerDeathTimer], a
+
+        ; debug stuff
+        ld a, 66
+        ld [playerDebugMarkers+0], a
+        ld [playerDebugMarkers+1], a
+        ld [playerDebugMarkers+2], a
+        ld [playerDebugMarkers+3], a
         ret
 
 updatePlayer:
@@ -98,6 +110,8 @@ updatePlayer:
         ; coordinate is now centered at top of sprite
         push bc
         push de
+        setWordBC playerLastCollisionHead
+        setWordDE playerLastCollisionHead+2
         call collisionTileAt ;bc, d - result in a
         call .checkHeadCollision
         pop de
@@ -108,6 +122,8 @@ updatePlayer:
         ; coordinate is now centered at player's feet
         push bc
         push de
+        setWordBC playerLastCollisionFeet
+        setWordDE playerLastCollisionFeet+2
         call collisionTileAt ;bc, d, result in a
         call .checkFeetCollision
         pop de
@@ -123,6 +139,8 @@ updatePlayer:
         ; coordinate is now roughly ahead of player's knees
         push bc
         push de
+        setWordBC playerLastCollisionWall
+        setWordDE playerLastCollisionWall+2
         call collisionTileAt ;bc, d, result in a
         call .checkForwardCollision
         pop de
@@ -203,8 +221,9 @@ updatePlayer:
         ; floor tiles only have solid floor in their bottom halves.
         ; this check detects whether the foot pixel is in the lower
         ; half of its respective tile, and bails if it is not.
+.standablePlatform
         bit 3, d
-        jp z, .notFloor
+        jp z, .endFootCollision
         ; our foot is inside a floor tile, so we must snap our position
         ; upwards so that our foot rests on the floor tile.
         ld a, 0
@@ -222,12 +241,29 @@ updatePlayer:
         ; if the player has released A here... 
         ld a, [keysHeld]
         and a, KEY_A | KEY_UP
-        jp nz, .notFloor
+        jp nz, .endFootCollision
         ; Also refill our jump timer to max (allowing us to jump again if it was empty)
         ld a, 15
         ld [playerJumpTimer], a
         ; done!
+        ; un-stash af and bail
+        pop af
+        ret
 .notFloor
+        pop af
+        push af
+        ; af once again contains the collision tile
+        ; is it a floaty platform?
+        cp 4
+        jp nz, .endFootCollision
+        ; floaty platforms are like regular floors, but with an additional constraint:
+        ; they are only collision targets when our Y speed is positive (ie, we're falling)
+        ; This allows the player to jump up through the floaty platforms without getting
+        ; snapped to their surface weirdly.
+        ld a, [playerSpeedY]
+        bit 7, a
+        jp z, .standablePlatform
+.endFootCollision
         ; un-stash af and bail
         pop af
         ret
@@ -278,6 +314,7 @@ collisionTileAt:
         add hl, de
         ld a, [hl]
         ld b, a ; b now contains the map number
+        setWordBC playerLastCollisionMap
 
         ; fix x coordinate to count tiles and not pixels
         ld a, c

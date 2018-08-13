@@ -101,7 +101,7 @@ initGameplay:
         ; write some test chunks
         ld b, 0
         ld a, 0
-        ld hl, currentChunk
+        ld hl, chunkBuffer
 .chunkInitLoop
         ld [hl], a
         inc a
