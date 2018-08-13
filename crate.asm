@@ -9,7 +9,7 @@ debugFoundSlot: DS 1
 spawnCrate:
         ; random chance! Spawn crates about once per chunk
         ld a, [rDIV]
-        and a, %00001111
+        and a, %00000111
         jp z, .randomCheckPassed
         ret
 .randomCheckPassed
@@ -99,14 +99,11 @@ spawnCrate:
         ret
 
 updateCrates:
-        ;* Is the player colliding with us?
-        ;* STUB
-
-        ;* Are we offscreen to the left? If so, die an honorable death.
         ld e, 4
 .loop
         ld a, e
         call getSpriteAddress ;bc = address to ourselves
+        ;* Are we offscreen to the left? If so, die an honorable death.
         ld hl, SPRITE_CHUNK
         add hl, bc
         ld d, [hl]
@@ -117,6 +114,65 @@ updateCrates:
         ; if a is still positive, then die an honorable death
         bit 7, a
         jp z, .die
+        ;* Is the player colliding with us?
+        push de; stash counter
+        ld hl, SPRITE_CHUNK
+        add hl, bc
+        ld a, [hl]
+        ld d, a ; d = our chunk 
+        inc hl
+        ld a, [hl]
+        and a, %11110000
+        ld e, a ; e = our x tile
+        inc hl
+        inc hl
+        ld a, [hl]
+        and a, %11110000
+        swap a
+        ; decrement a = effective y - 16
+        dec a
+        or e
+        ld e, a ; e = our coordinates
+        push de ; stash!
+
+        ; grab the player's coordinates
+        ld bc, SpriteList
+        ld hl, SPRITE_CHUNK
+        add hl, bc
+        ld a, [hl]
+        ld d, a ; d = player's chunk 
+        inc hl
+        ld a, [hl]
+        and a, %11110000
+        ld e, a ; e = player's x tile
+        inc hl
+        inc hl
+        ld a, [hl]
+        and a, %11110000
+        swap a
+        or e
+        ld e, a ; de = player's chunk + coordinates
+        pop bc ; our chunk + coordinates
+        
+        ; compare!
+        ld a, b
+        cp a, d
+        jp nz, .noCollision
+        ld a, c
+        cp a, e
+        jp nz, .noCollision
+        ; if we got here, the player's tile coordinates overlap ours.
+        ; proceed to kick ourselves!
+
+        pop de
+        push de
+        ld a, e
+        ld bc, CrateKicked
+        call setSpriteAnimation
+        ; done!
+
+.noCollision
+        pop de ; un-stash counter
         inc e
         ld a, e
         cp 7
@@ -129,6 +185,10 @@ updateCrates:
         ld a, 0
         ld [hl], a
         ; and we're done
+        inc e
+        ld a, e
+        cp 7
+        jp nz, .loop
         ret
 
 
