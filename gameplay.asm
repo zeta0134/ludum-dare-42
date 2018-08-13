@@ -85,6 +85,11 @@ initGameplay:
         ld      a, %00011011      ; inverted gradient for material effects
         ld      [rBGP], a
 
+        ld      a, %11010000     ; "Light" sprite: black, light grey, white
+        ld      [rOBP0],a
+        ld      a, %11100100     ; "Dark"  sprite: black, dark grey, light grey
+        ld      [rOBP1],a
+
         ; set blank tile to be black in this palette
         ld a, $00
         ld hl, $9000

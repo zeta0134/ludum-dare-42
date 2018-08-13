@@ -33,7 +33,7 @@ initExplosions:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 4
         setFieldByte SPRITE_Y_POS, 30
-        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_TILE_BASE, 13
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ld a, EXPLOSION_BASE_SPRITE + 1
@@ -41,7 +41,7 @@ initExplosions:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 4
         setFieldByte SPRITE_Y_POS, 76
-        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_TILE_BASE, 13
         setFieldByte SPRITE_HUD_SPACE, 1
         setFieldByte SPRITE_ANIMATION_DURATION, 8
 
@@ -50,7 +50,7 @@ initExplosions:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 4
         setFieldByte SPRITE_Y_POS, 100
-        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_TILE_BASE, 13
         setFieldByte SPRITE_HUD_SPACE, 1
         setFieldByte SPRITE_ANIMATION_DURATION, 16
 

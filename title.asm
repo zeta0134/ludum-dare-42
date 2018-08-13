@@ -19,9 +19,6 @@ initTitleScreen:
         call    StopLCD
         setWordImm MapAddress, titleMapData
 
-        ld      a,$e4      ; Standard gradient
-        ld      [rBGP],a
-
         ; set blank tile to be black in this palette
         ld a, $ff
         ld hl, $9000
@@ -41,7 +38,7 @@ initTitleScreen:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 48 + 8
         setFieldByte SPRITE_Y_POS, SHIP_Y
-        setFieldByte SPRITE_TILE_BASE, 29
+        setFieldByte SPRITE_TILE_BASE, 26
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ld a, 1
@@ -49,7 +46,7 @@ initTitleScreen:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 48 + 16 + 8
         setFieldByte SPRITE_Y_POS, SHIP_Y
-        setFieldByte SPRITE_TILE_BASE, 29
+        setFieldByte SPRITE_TILE_BASE, 26
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ld a, 2
@@ -57,7 +54,7 @@ initTitleScreen:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 48 + 32 + 8
         setFieldByte SPRITE_Y_POS, SHIP_Y
-        setFieldByte SPRITE_TILE_BASE, 29
+        setFieldByte SPRITE_TILE_BASE, 26
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ld a, 3
@@ -65,7 +62,7 @@ initTitleScreen:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 48 + 48 + 8
         setFieldByte SPRITE_Y_POS, SHIP_Y - 5
-        setFieldByte SPRITE_TILE_BASE, 32
+        setFieldByte SPRITE_TILE_BASE, 29
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ld a, 4
@@ -73,7 +70,7 @@ initTitleScreen:
         call spawnSprite
         setFieldByte SPRITE_X_POS, 48 - 1
         setFieldByte SPRITE_Y_POS, SHIP_Y - 4
-        setFieldByte SPRITE_TILE_BASE, 16
+        setFieldByte SPRITE_TILE_BASE, 13
         setFieldByte SPRITE_HUD_SPACE, 1
 
         ld a, 5
@@ -115,7 +112,12 @@ displayHighScore:
 updateTitleScreen:
         ld      a,$e4      ; Standard gradient
         ld      [rBGP],a
-        
+
+        ld      a,$d0      ; "Light" sprite: black, light grey, white
+        ld      [rOBP0],a
+        ld      a,$e4      ; "Dark"  sprite: black, dark grey, light grey
+        ld      [rOBP1],a
+
         call updateSprites
         ld a, [keysUp]
         and a, KEY_START

@@ -19,7 +19,7 @@ initScore:
         ld [hl], 20 ; y-coordinate 
         inc hl
         ld [hl+], a ; x-coordinate 
-        ld [hl], $50 ; tile-index
+        ld [hl], $44 ; tile-index
         inc hl
         inc hl ; skip over attributes
         add a, 7
@@ -83,7 +83,7 @@ displayScoreByte:
 
         ; calculate and write tile
         sla a
-        add a, $50
+        add a, $44
         ld [hl], a
         ; advance to next digit tile attribute
         inc hl
@@ -93,7 +93,7 @@ displayScoreByte:
         ld a, b
         ; calculate and write tile
         sla a
-        add a, $50
+        add a, $44
         ld [hl], a
         ; advance to next digit tile attribute
         inc hl

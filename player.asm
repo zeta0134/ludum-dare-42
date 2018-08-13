@@ -63,29 +63,44 @@ updatePlayer:
         jp nz, .deathLimbo
         call initTitleScreen
 .deathLimbo
-        ; Check the death timer, and fade the palette out accordingly
-        ld a, [playerDeathTimer]
-        cp 90
-        jp nc, .doneWithPalette
-        ld      a, %00000110      ; lighter by one shade
-        ld      [rBGP], a
-        ld a, [playerDeathTimer]
-        cp 60
-        jp nc, .doneWithPalette
-        ld      a, %00000001      ; lighter by one shade
-        ld      [rBGP], a   
-        ld a, [playerDeathTimer]
-        cp 30
-        jp nc, .doneWithPalette
-        ld      a, %00000000      ; lighter by one shade
-        ld      [rBGP], a
-.doneWithPalette
+
         ; depending on the nature of our demise, we may still want to move right
         ld a, [SpriteList + SPRITE_CHUNK]
         ld b, a
         ld a, [deathChunk];
         cp b
         jp z, .floatOffIntoTheDistance
+        ; Check the death timer, and fade the palette out accordingly
+        ld a, [playerDeathTimer]
+        cp 90
+        jp nc, .doneWithWhitePalette
+        ld      a, %00000110      ; lighter by one shade
+        ld      [rBGP], a
+        ld      a, %01000000     ; "Light" sprite
+        ld      [rOBP0],a
+        ld      a, %10010000     ; "Dark"  sprite
+        ld      [rOBP1],a
+        ld a, [playerDeathTimer]
+        cp 60
+        jp nc, .doneWithWhitePalette
+        ld      a, %00000001      ; lighter by one shade
+        ld      [rBGP], a   
+        ld      a, %00000000     ; "Light" sprite
+        ld      [rOBP0],a
+        ld      a, %01000000     ; "Dark"  sprite
+        ld      [rOBP1],a
+        ld a, [playerDeathTimer]
+        cp 30
+        jp nc, .doneWithWhitePalette
+        ld      a, %00000000      ; lighter by one shade
+        ld      [rBGP], a
+        ld      a, %00000000     ; "Light" sprite
+        ld      [rOBP0],a
+        ld      a, %00000000     ; "Dark"  sprite
+        ld      [rOBP1],a
+        
+.doneWithWhitePalette
+
         ret
 .floatOffIntoTheDistance
         ld a, 0
@@ -98,6 +113,36 @@ updatePlayer:
         jp nz, .doneBeingDead
         ld hl, TargetCameraX + 1
         inc [hl]
+
+        ; Do the palette thing again, this time with a fade to black and tighter timing
+        ld a, [playerDeathTimer]
+        cp 60
+        jp nc, .doneBeingDead
+        ld      a, %01101111      ; darker by one shade
+        ld      [rBGP], a
+        ld      a, %11110100     ; "Light" sprite
+        ld      [rOBP0],a
+        ld      a, %11111001     ; "Dark"  sprite
+        ld      [rOBP1],a
+        ld a, [playerDeathTimer]
+        cp 40
+        jp nc, .doneBeingDead
+        ld      a, %10111111      ; darker by one shade
+        ld      [rBGP], a
+        ld      a, %11111101     ; "Light" sprite
+        ld      [rOBP0],a
+        ld      a, %11111110     ; "Dark"  sprite
+        ld      [rOBP1],a   
+        ld a, [playerDeathTimer]
+        cp 20
+        jp nc, .doneBeingDead
+        ld      a, %11111111      ; darker by one shade
+        ld      [rBGP], a
+        ;ld      a, %11111111     ; "Light" sprite
+        ;ld      [rOBP0],a
+        ;ld      a, %11111111     ; "Dark"  sprite
+        ;ld      [rOBP1],a   
+
 .doneBeingDead
         ret
 
