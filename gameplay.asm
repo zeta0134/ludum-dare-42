@@ -8,6 +8,7 @@ currentChunk: DS 1
 chunkBuffer: DS 256
 spawnCounter: DS 1
 deathChunk: DS 1
+lastChunkExitType: DS 1
         POPS
 
 updateGameplay:
@@ -75,6 +76,28 @@ initGameplay:
         ; We only have two chunks to start with, so set the death barrier there:
         ld a, 2
         ld [deathChunk], a
+        ; The exit type for the default chunk is important, as it determines what
+        ; kinds of chunks we'll generate ahead of it
+        ld a, "A"
+        ld [lastChunkExitType], a
+
+        ; generate a few chunks to get the player started
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
+        call generateNewChunk
 
         ; debug
         ld a, 66
@@ -172,3 +195,59 @@ spawnObjects:
         jp hl
         ; implied ret
 
+generateNewChunk:
+        ; grab a random value
+        ld a, [rDIV]
+        ; mask it based on the length of the chunk attribute table
+        and a, CHUNK_MASK
+        ; starting with that item in the table...
+        ld d, a
+.loop
+        ld bc, chunkAttributes
+        ld a, d
+        sla a
+        sla a ; x4
+        inc a ; skip to "entrance" field
+        ld h, 0
+        ld l, a
+        add hl, bc ;now pointing to entrance field of this chunk type in chunkAttributes table
+        ; if this entrance type matches our last exit
+        ld b, [hl]
+        ld a, [lastChunkExitType]
+        cp b
+        jp z, .foundValidChunk
+        ; otherwise, iterate forward to the next item in the table,
+        ; and continue until we find a valid exit.
+        ld a, d
+        inc a
+        and a, CHUNK_MASK
+        ld d, a
+        jp .loop
+
+.foundValidChunk
+        ; hl is presently pointing at the valid chunk's entrance
+        dec hl ; now pointing at chunk index
+        ld d, [hl] ;d = next chunk
+        inc hl
+        inc hl
+        ld e, [hl] ;e = next chunk exit type
+        ld hl, chunkBuffer
+        ld b, 0
+        ld a, [deathChunk]
+        ld c, a
+        add hl, bc ; hl = chunkBuffer[deathChunk]
+        ld [hl], d ; new chunk written
+        inc a
+        ld [deathChunk], a ; move the death chunk forward
+        ; now we need to make sure the next chunk in sequence is a 0, so
+        ; that we always have a death plane ahead of us
+        ld hl, chunkBuffer
+        ld c, a
+        add hl, bc ;hl = chunkBuffer[new deathChunk]
+        ld a, 0
+        ld [hl], a
+        ; finally, make sure the last exit type is updated to reflect the next chunk type we need
+        ld a, e
+        ld [lastChunkExitType], a
+        ; and done!
+        ret

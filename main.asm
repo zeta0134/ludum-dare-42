@@ -23,6 +23,7 @@
         INCLUDE "util.asm"
 
         INCLUDE "animations.asm"
+        INCLUDE "chunk_attributes_table.asm"
         INCLUDE "graphics.asm"
         INCLUDE "input.asm"
 
