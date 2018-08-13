@@ -5,12 +5,15 @@ playerLastCollisionHead: DS 4
 playerLastCollisionFeet: DS 4
 playerLastCollisionWall: DS 4
 playerLastCollisionMap: DS 2
-playerSpeedX: DS 1
+playerSpeedX: DS 2
+playerSubX: DS 1
 playerSpeedY: DS 1
 playerJumpTimer: DS 1
 playerAccelTimer: DS 1
 playerDeathTimer: DS 1
 playerDead: DS 1
+playerTumbleTimer: DS 1
+lastPlayerTile: DS 1
         POPS
 
 initPlayer:
@@ -24,9 +27,12 @@ initPlayer:
         setFieldByte SPRITE_CHUNK, 0
 
         ; Initialize gameplay variables to sane values
+        ld a, 2
+        ld [playerSpeedX+0], a
         ld a, 0
-        ld [playerSpeedX], a
+        ld [playerSpeedX+1], a
         ld [playerSpeedY], a
+        ld [playerSubX], a
         ld a, 1
         ld [playerAccelTimer], a
         ; don't let the player jump in mid-air if we start them there
@@ -57,9 +63,69 @@ updatePlayer:
         jp nz, .deathLimbo
         call initTitleScreen
 .deathLimbo
+        ; depending on the nature of our demise, we may still want to move right
+        ld a, [SpriteList + SPRITE_CHUNK]
+        ld b, a
+        ld a, [deathChunk];
+        cp b
+        jp z, .floatOffIntoTheDistance
+        ret
+.floatOffIntoTheDistance
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        ld hl, SPRITE_X_POS
+        add hl, bc
+        inc [hl]
+        ld a, [hl]
+        and %00000011
+        jp nz, .doneBeingDead
+        ld hl, TargetCameraX + 1
+        inc [hl]
+.doneBeingDead
         ret
 
 .notDead
+        ; Have we entered the death chunk?
+        ld a, [SpriteList + SPRITE_CHUNK]
+        ld b, a
+        ld a, [deathChunk];
+        cp b
+        jp nz, .notOutOfTheWoodsYet
+
+        ; MOST unfortunate. Set the player's speed to a zombie shuffle, and
+        ; switch them to the floaty space bob animation of eventual asphyxiation
+        ld hl, playerSpeedX
+        ld a, 0
+        ld [hl+], a
+        ld a, 32
+        ld [hl], a
+        ld a, 1
+        ld [playerDead], a
+        ld a, 255
+        ld [playerDeathTimer], a
+        ld a, 0
+        ld bc, PlayerFloatsInSpace
+        call spawnSprite
+        setFieldByte SPRITE_TILE_BASE, 6
+        ; since we just died, go ahead and stop processing here
+        ret
+
+.notOutOfTheWoodsYet
+        ; if we're tumbling, decrement that timer, and optionally deal with the animation
+        ld a, [playerTumbleTimer]
+        cp 0
+        jp z, .notTumbling
+        dec a
+        ld [playerTumbleTimer], a
+        cp 0
+        jp nz, .notTumbling
+        ; our tumble timer reached zero, so reset our animation to running
+        ld a, 0
+        ld bc, PlayerRuns
+        call spawnSprite
+        setFieldByte SPRITE_TILE_BASE, 0
+
+.notTumbling
         ; calculate new player position based on current speed
         ld a, 0
         call getSpriteAddress ; player sprite address in bc
@@ -69,15 +135,24 @@ updatePlayer:
         inc bc
         ld a, [bc]
         ld e, a ;x coord within chunk
+        push de ;stash for now
 
+        ld a, [playerSpeedX+1] ;speed low byte
+        ld e, a
+        ld a, [playerSubX]
+        add a, e
+        ld [playerSubX], a ;add speed low byte to subX, maintain carry
+        pop de ; restore full position from earlier
         ld a, [playerSpeedX]
-        ld l, a
-        ld h, 0
-        bit 7, a
-        jp z, .positive
-        ld h, $FF
-.positive
-        add hl, de ;combined player speed and chunk index
+        adc a, e ; add player speed high byte to coordinate x, w/ carry
+        ld e, a ;result back in e
+        ld a, 0
+        adc a, d ; carry over to chunk byte
+        ld d, a
+        ; de now contains original position + player speed
+        ld h, d
+        ld l, e
+        
         dec bc
         ld a, h
         ld [bc], a ;chunk index (high byte result)
@@ -146,6 +221,29 @@ updatePlayer:
         pop de
         pop bc
 
+        ; adjust the player's speed. 
+        ;Max speed is 6 (px per frame)
+        ld a, [playerSpeedX]
+        sub a, 5
+        bit 7, a
+        jp z, .noSpeedIncrease
+        ; increase the sub-speed w/ carry once per column. (+4)
+        ld a, [lastPlayerTile]
+        ld b, a
+        ld a, [lastRightmostTile]
+        cp b
+        jp z, .noSpeedIncrease
+        ld a, [playerSpeedX+1]
+        add a, 2
+        ld [playerSpeedX+1], a
+        ld a, [playerSpeedX]
+        adc a, 0
+        ld [playerSpeedX], a
+
+.noSpeedIncrease
+        ld a, [lastRightmostTile]
+        ld [lastPlayerTile], a
+
         ; handle trivial matters like gravitational forces and space-time
         ld a, [playerAccelTimer]
         dec a
@@ -168,8 +266,8 @@ updatePlayer:
 
 
         ; handle player input
-        ld a, 2
-        ld [playerSpeedX], a
+        ;ld a, 2
+        ;ld [playerSpeedX], a
 ; Note: pretty much all the D-pad checks are for debug only
 .checkRight:
         ld a, [keysHeld]
@@ -293,6 +391,37 @@ updatePlayer:
         ret
 
 .checkHeadCollision:
+        ; stash af
+        push af
+        ; is it a ceiling?
+        cp 3
+        jp nz, .notCeiling
+        ; ceiling tiles are only solid in their top halves.
+        ; this check detects whether the head pixel is in the top
+        ; half of its respective tile, and bails if it is not.
+        bit 3, d
+        jp nz, .notCeiling
+        ; our head is inside a ceiling tile, so we must snap our position
+        ; downwards so that our head isn't inside the tile anymore
+        ld a, 0
+        call getSpriteAddress ; player sprite address in bc
+        inc bc
+        inc bc
+        inc bc
+        ld a, [bc] ; y-coordinate of player
+        and a, %11110000 ; erase tile index
+        or a, %00000111 ; set tile index to 8
+        ld [bc], a
+        ; also reset our vertical speed to 0:
+        ld a, 1
+        ld [playerSpeedY], a
+        ; and kill the jump timer; no hugging the ceiling!
+        ld a, 0
+        ld [playerJumpTimer], a
+        ; done!
+.notCeiling
+        ; un-stash af and bail
+        pop af
         ret
 
 
