@@ -2,10 +2,12 @@ SPRITE_FILES := $(wildcard art/sprites/*.png)
 SPRITE_2BPP := $(patsubst art/sprites/%.png,data/sprites/%.2bpp,$(SPRITE_FILES))
 TILEMAP_FILES := $(wildcard art/tiles/*.png)
 TILEMAP_2BPP := $(patsubst art/tiles/%.png,data/tiles/%.2bpp,$(TILEMAP_FILES))
+SONG_FILES := $(wildcard art/songs/*.mod)
+SONG_ASM := $(patsubst art/songs/%.mod,data/songs/%.asm,$(SONG_FILES))
 
 ASM_FILES := $(wildcard *.asm) $(wildcard vendor/*.asm)
 
-hello.gb: $(ASM_FILES) $(SPRITE_2BPP) $(TILEMAP_2BPP)
+hello.gb: $(ASM_FILES) $(SONG_ASM) $(SPRITE_2BPP) $(TILEMAP_2BPP)
 	rgbasm -o hello.obj main.asm
 	rgblink -o hello.gb hello.obj 
 	rgbfix -v hello.gb
@@ -37,3 +39,6 @@ data/tiles/%.2bpp: art/tiles/%.png
 	@mkdir -p data/tiles
 	rgbgfx -f -o $@ $<
 
+data/songs/%.asm: art/songs/%.mod
+	@mkdir -p data/songs
+	mod2gbt $< data/songs/$* -speed
