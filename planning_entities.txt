@@ -1,0 +1,88 @@
+Ludum Dare - Objects
+
++===============================+
+| OAM (Hardware, Cannot Change) |
++===============================+
+
+OAM gets a shadow which is updated leisurely by the game logic. The shadow is copied into hardware rapidly at the start of every vblank. Game logic can and should ignore hardware OAM entirely.
+
+- X: horizontal coordinates (minus 8)
+  - 0 = fully offscreen to the LEFT. 
+  - 8 = onscreen on the left edge.
+  - 160 = onscreen on the right edge
+  - 168 = fully offscreen to the RIGHT
+- Y: vertical coordinates (minux 16)
+  - 0 = fully offscreen to the TOP
+  - 16 = onscreen on the top edge
+  - 144 = onscreen on the bottom edge (or 8 pixels from the edge in 8x8 mode)
+  - 152 = onscreen on the bottom edge (or 8 pixels cutoff in 8x16 mode)
+  - 160 = offscreen to the BOTTOM
+- tile number
+- attribute flags
+  - obj-bg priority
+  - x flip
+  - y flip
+  - palette number
+  - vram-bank (cgb only)
+
++==============+
+| Sprite Table |
++==============+
+
+Understands objects in game-world space. Performs screen space coordinate transformations, and handles the logic of larger sprites than 8x16, especially w/ regards to flips and things.
+
+Dyson's Fear limitation: 8x16 mode exclusively
+
+- X, Y: coordinates (16bit)
+  - Sprite is invisible (not copied to OAM) when offscreen in either direction
+- width in tiles: 8x16, 16x16, 24x16, etc etc
+- height in tiles: 8x16, 8x32, etc
+- starting tile
+- horizontal flip
+- vertical flip
+- palette
+
++===========+
+| Animation |
++===========+
+
+Describes high-level information about a single animation
+
+- Length in keyframes
+- Address of Animation Table
+
++=================+
+| Animation Table |
++=================+
+
+Stores a list of frame numbers, durations, and offsets. Data below is repeated for each keyframe:
+
+- Duration in hardware frames
+- Cel Index (relative to some starting image)
+- X-Offset
+- Y-Offset
+- Attributes
+
++=======+
+| Actor |
++=======+
+
+Describes the visuals for one object, including animation data and position, optionally relative to a camera
+
+- Animation
+- Current Keyframe
+- Time spent at this Keyframe
+- Position: X,Y
+- Reference Camera (game world, HUD, parallax, etc)
+
++========+
+| Entity |
++========+
+
+Represents one object in the game world. Very high level, but has some common attributes
+
+- Alive - boolean
+- Actor (tracks position and animation)
+- Update (function)
+- Instance Data - arbitrary collection of bytes for the update function to reference
+
