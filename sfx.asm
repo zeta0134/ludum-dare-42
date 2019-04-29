@@ -19,7 +19,7 @@ Channel4RowsPointer:   DS 2
         POPS
 
         PUSHS           
-        SECTION "SFX Data",ROM0
+        SECTION "SFX Data",ROMX
 
         INCLUDE "pitch_table.asm"
 
@@ -48,6 +48,26 @@ WrenchSfx:
         ;  channel, row count, row length
         DB 1,       9,         2
         DW WrenchSfxData
+
+KathunkSfxData:
+        ;  _____, length, volume, poly_params
+        DB $00,   $00,    $F0,    $53
+        DB $00,   $00,    $D0,    $53
+        DB $00,   $00,    $B0,    $54
+        DB $00,   $00,    $90,    $55
+        DB $00,   $00,    $F0,    $44
+        DB $00,   $00,    $E0,    $44
+        DB $00,   $00,    $D0,    $45
+        DB $00,   $00,    $C0,    $45
+        DB $00,   $00,    $B0,    $46
+        DB $00,   $00,    $A0,    $46
+        DB $00,   $00,    $90,    $47
+        DB $00,   $00,    $80,    $47
+
+KathunkSfx:
+        ;  channel, row count, row length
+        DB 4,       12,         2
+        DW KathunkSfxData
 
         POPS
 
@@ -100,6 +120,50 @@ UpdateChannel1:
         ld [rNR12], a
         ld a, $80
         ld [rNR14], a
+.done:
+        ret
+
+UpdateChannel4:
+        ld a, [Channel4SfxPlaying]      ; Make sure we're actually enabled before continuing
+        cp a, 0
+        jp z, .done
+        ld a, [Channel4RowDelayCounter] ; Decrement the row counter
+        dec a
+        ld [Channel4RowDelayCounter], a
+        jp nz, .done                    ; If we're not zero yet, skip any further action this round
+        ld a, [Channel4RowLength]       ; reset the row counter
+        ld [Channel4RowDelayCounter], a
+        ld a, [Channel4RowsRemaining]
+        cp a, 0                         ; If there aren't any more rows to play,
+        jp z, .disableChannel           ; disable the channel
+        dec a
+        ld [Channel4RowsRemaining], a
+.updateRegisters:
+        getWordHL Channel4RowsPointer
+        ld a, [hl+]
+        ld a, [hl+]
+        ld [rAUD4LEN], a
+        ld a, [hl+]
+        ld [rAUD4ENV], a
+.updateFrequency:
+        ld c, [hl]
+        inc hl
+        ; write out the row pointer, since we're done with it at this point
+        setWordHL Channel4RowsPointer
+        ld a, c
+        ld [rAUD4POLY], a ; Write the polynomial parameters
+        ld a, [hl+]
+        or a, $80 ; Trigger
+        ld [rAUD4GO], a
+        jp .done
+.disableChannel:
+        ld a, 0
+        ld [Channel4SfxPlaying], a
+        ; play a silent note to turn off the channel
+        ld a, 0
+        ld [rAUD4ENV], a
+        ld a, $80
+        ld [rAUD4GO], a
 .done:
         ret
 
@@ -169,6 +233,7 @@ updateBGMChannels:
 
 updateSfx:
         call UpdateChannel1
+        call UpdateChannel4
         ret
 
         POPS

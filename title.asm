@@ -95,6 +95,9 @@ initTitleScreen:
         ld      [rLCDC],a
         ei
 
+        ld a, $0F
+        call gbt_enable_channels
+
         ld      de,run_data
         ld      bc,BANK(run_data)
         ld      a,$05

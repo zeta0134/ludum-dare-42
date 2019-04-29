@@ -322,6 +322,9 @@ updateMaterials:
         ld [cameraShakeIntensity], a
         ld a, 8
         ld [cameraShakeTimer], a
+        ; play a satisfying sound
+        ld hl, KathunkSfx
+        call queueSound
 .stillAlive                         ; }
         ld a, [hl]
         cp 0                        ; if (x == 0)  // I.e. material slot is empty
