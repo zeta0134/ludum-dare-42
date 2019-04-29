@@ -4,12 +4,18 @@ TILEMAP_FILES := $(wildcard art/tiles/*.png)
 TILEMAP_2BPP := $(patsubst art/tiles/%.png,data/tiles/%.2bpp,$(TILEMAP_FILES))
 SONG_FILES := $(wildcard art/songs/*.mod)
 SONG_ASM := $(patsubst art/songs/%.mod,data/songs/%.asm,$(SONG_FILES))
+SONG_O := $(patsubst art/songs/%.mod,data/songs/%.o,$(SONG_FILES))
 
 ASM_FILES := $(wildcard *.asm) $(wildcard vendor/*.asm)
 
-hello.gb: $(ASM_FILES) $(SONG_ASM) $(SPRITE_2BPP) $(TILEMAP_2BPP)
+hello.gb: $(ASM_FILES) $(SONG_O) $(SPRITE_2BPP) $(TILEMAP_2BPP)
+	# vendor libraries
+	rgbasm -o data/gbt_player.o vendor/gbt_player.asm
+	rgbasm -o data/gbt_player_bank1.o vendor/gbt_player_bank1.asm
+
 	rgbasm -o hello.obj main.asm
-	rgblink -o hello.gb hello.obj 
+
+	rgblink -o hello.gb hello.obj data/gbt_player.o data/gbt_player_bank1.o $(SONG_O)
 	rgbfix -v hello.gb
 
 run: hello.gb
@@ -22,7 +28,7 @@ debug: hello.gb
 clean:
 	@rm -f *.gb
 	@rm -f *.obj
-	@rm -f data/songs/*.asm
+	@rm -f data/songs/*
 
 .PHONY: art
 art: $(SPRITE_2BPP) $(TILEMAP_2BPP)
@@ -46,3 +52,7 @@ data/tiles/%.2bpp: art/tiles/%.png
 data/songs/%.asm: art/songs/%.mod
 	@mkdir -p data/songs
 	cd data/songs; mod2gbt ../../$< $* -speed
+
+data/songs/%.o: data/songs/%.asm
+	@mkdir -p data/songs
+	rgbasm -o $@ $<
