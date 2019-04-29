@@ -2,4 +2,5 @@
 *.obj
 *.o
 *.2bpp
+*.bak
 data/songs/*.asm
