@@ -1,6 +1,7 @@
         ;  Macros and compiler defines
         INCLUDE "vendor/gbhw.inc"
         INCLUDE "vendor/ibmpc1.inc"
+        INCLUDE "vendor/gbt_player.inc"
 
         ; Standard gameboy header. Code execution after BIOS routine will
         ; always begin at $100
@@ -142,6 +143,7 @@ gameLoop:
 
         call    runGameState
         call    pollInput
+        call    gbt_update
 
         jp      gameLoop
 

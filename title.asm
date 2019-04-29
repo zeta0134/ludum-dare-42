@@ -95,6 +95,11 @@ initTitleScreen:
         ld      [rLCDC],a
         ei
 
+        ld      de,demo_data
+        ld      bc,BANK(demo_data)
+        ld      a,$05
+        call    gbt_play ; Play song
+
         ; for the title screen, that's it!
         ret
 
