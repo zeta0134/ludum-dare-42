@@ -1,4 +1,5 @@
 *.gb
 *.obj
+*.o
 *.2bpp
 data/songs/*.asm
