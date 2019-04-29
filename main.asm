@@ -26,6 +26,8 @@
         INCLUDE "chunk_attributes_table.asm"
         INCLUDE "graphics.asm"
         INCLUDE "input.asm"
+        INCLUDE "pitch_table.asm"
+        INCLUDE "sound_defines.asm"
 
         INCLUDE "gameplay.asm"
         INCLUDE "score.asm"
