@@ -22,6 +22,7 @@ debug: hello.gb
 clean:
 	@rm -f *.gb
 	@rm -f *.obj
+	@rm -f data/songs/*.asm
 
 .PHONY: art
 art: $(SPRITE_2BPP) $(TILEMAP_2BPP)
@@ -39,6 +40,9 @@ data/tiles/%.2bpp: art/tiles/%.png
 	@mkdir -p data/tiles
 	rgbgfx -f -o $@ $<
 
+# Note: the cd-foo here is necessary becuase mod2gbt tries to be fancy with the song name,
+# and doesn't allow specifying the output file directly.
+
 data/songs/%.asm: art/songs/%.mod
 	@mkdir -p data/songs
-	mod2gbt $< data/songs/$* -speed
+	cd data/songs; mod2gbt ../../$< $* -speed
