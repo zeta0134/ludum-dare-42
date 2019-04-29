@@ -350,6 +350,12 @@ updatePlayer:
         dec [hl]
         ld a, 1 ; decelerate immediately
         ld [playerAccelTimer], a
+        ; If we just pressed A, play the jump sound
+        ld a, [keysDown]
+        and a, KEY_A | KEY_UP
+        jp z, .done
+        ld hl, JumpSfx
+        call queueSound
 .done:
         ret
 

@@ -27,8 +27,7 @@
         INCLUDE "chunk_attributes_table.asm"
         INCLUDE "graphics.asm"
         INCLUDE "input.asm"
-        INCLUDE "pitch_table.asm"
-        INCLUDE "sound_defines.asm"
+        INCLUDE "sfx.asm"
 
         INCLUDE "gameplay.asm"
         INCLUDE "score.asm"
@@ -120,6 +119,7 @@ begin:
         ld [highScore + 2], a
 
         call initInput      
+        call initSfx
 
         ; we start in main gameplay mode for now, so initialize all of that
         call initTitleScreen
@@ -143,7 +143,9 @@ gameLoop:
 
         call    runGameState
         call    pollInput
+        call    updateBGMChannels
         call    gbt_update
+        call    updateSfx
 
         jp      gameLoop
 

@@ -198,6 +198,10 @@ updateWrench:
         ld a, 30
         ld [chunkCooldownTimer], a
 
+        ; Play the wrench obtain sound!
+        ld hl, WrenchSfx
+        call queueSound
+
         ; done!
 
 .noCollision
