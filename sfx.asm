@@ -98,6 +98,16 @@ CrateKnockSfx:
         DB 4,       12,         2
         DW CrateKnockSfxData
 
+ExplosionSfxData:
+        ;  _____, length, volume, poly_params
+        DB $00,   $00,    $80,    $54
+        DB $00,   $00,    $70,    $64
+
+ExplosionSfx:
+        ;  channel, row count, row length
+        DB 4,       2,         5
+        DW ExplosionSfxData
+
         POPS
 
         PUSHS           

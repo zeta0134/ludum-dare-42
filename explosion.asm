@@ -236,6 +236,9 @@ updateExplosions:
         bit 7, a
         jp nz, .notVisible
 .visible
+        ld hl, ExplosionSfx
+        call queueSound 
+
         ; high byte is within one chunk. This MIGHT not be good enough. We'll see.
         ; Okay, now we start with the player's X coordinate in OAM
         ld a, [shadowOAM + 1] ; first entry, x index
