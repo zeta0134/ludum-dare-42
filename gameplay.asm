@@ -177,6 +177,16 @@ initGameplay:
         ld      a,LCDCF_ON|LCDCF_BG8800|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
         ld      [rLCDC],a
 
+        call gbt_stop
+        call gbt_update
+        ld a, $00
+        call gbt_enable_channels 
+
+        ld      de,run_data
+        ld      bc,BANK(run_data)
+        ld      a,$05
+        call    gbt_play ; Play song
+
         ei
 
         ret

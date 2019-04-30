@@ -101,8 +101,8 @@ initTitleScreen:
         ld a, $0F
         call gbt_enable_channels
 
-        ld      de,run_data
-        ld      bc,BANK(run_data)
+        ld      de,title_data
+        ld      bc,BANK(title_data)
         ld      a,$05
         call    gbt_play ; Play song
 
