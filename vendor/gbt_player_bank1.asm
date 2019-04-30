@@ -1383,23 +1383,42 @@ gbt_update_bank1::
 ;-------------------------------------------------------------------------------
 
 gbt_update_effects_bank1::
+    ld      a,[gbt_channels_enabled]
+    and     a,$01
+    jr      z,.channel2
 
     call    channel1_update_effects
     and     a,a
     call    nz,channel1_refresh_registers
 
+.channel2:
+    ld      a,[gbt_channels_enabled]
+    and     a,$02
+    jr      z,.channel3
+
     call    channel2_update_effects
     and     a,a
     call    nz,channel2_refresh_registers
+
+.channel3:
+    ld      a,[gbt_channels_enabled]
+    and     a,$04
+    jr      z,.channel4
 
     call    channel3_update_effects
     and     a,a
     call    nz,channel3_refresh_registers
 
+.channel4:
+    ld      a,[gbt_channels_enabled]
+    and     a,$08
+    jr      z,.done
+
     call    channel4_update_effects
     and     a,a
     call    nz,channel4_refresh_registers
 
+.done
     ret
 
 ;###############################################################################
