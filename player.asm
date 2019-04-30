@@ -154,6 +154,18 @@ updatePlayer:
         cp b
         jp nz, .notOutOfTheWoodsYet
 
+        ; play a death music
+        ; ONLY if the player is alive
+        ld a, [playerDead]
+        cp 0
+        jp nz, .stillAlive_1
+        
+        ld      de,death_data
+        ld      bc,BANK(death_data)
+        ld      a,$05
+        call    gbt_play ; Play song
+
+.stillAlive_1
         ; MOST unfortunate. Set the player's speed to a zombie shuffle, and
         ; switch them to the floaty space bob animation of eventual asphyxiation
         ld hl, playerSpeedX
@@ -452,6 +464,14 @@ updatePlayer:
         or a, %00000110 ; replace it with a suitable wall-splat position
         ld [bc], a
         ; we have to tell the player they're dead :(
+        ; first play a satisfying sound
+        ; ONLY if the player is currently alive 
+        ld a, [playerDead]
+        cp 0
+        jp nz, .stillAlive
+        ld hl, DeathByRUDSfx
+        call queueSound
+.stillAlive
         ld a, 1
         ld [playerDead], a
 .notWall
