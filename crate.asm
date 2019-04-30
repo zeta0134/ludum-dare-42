@@ -184,6 +184,10 @@ updateCrates:
         ; if we got here, the player's tile coordinates overlap ours.
         ; proceed to kick ourselves!
 
+        ; Play a sound for being knocked over
+        ld hl, CrateKnockSfx
+        call queueSound
+
         pop de
         push de
         ld a, e

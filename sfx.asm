@@ -71,12 +71,32 @@ KathunkSfx:
 
 CeilingBonkSfxData:
         ;  sweep, duty+length, volume, note
-        DB $2A,   $C0,         $F2,    D4
+        DB $2B,   $C0,         $F2,    D5
 
 CeilingBonkSfx:
         ;  channel, row count, row length
         DB 1,       1,         8
         DW CeilingBonkSfxData
+
+CrateKnockSfxData:
+        ;  _____, length, volume, poly_params
+        DB $00,   $00,    $F0,    $33
+        DB $00,   $00,    $80,    $33
+        DB $00,   $00,    $00,    $00
+        DB $00,   $00,    $F0,    $44
+        DB $00,   $00,    $80,    $44
+        DB $00,   $00,    $00,    $00
+        DB $00,   $00,    $F0,    $54
+        DB $00,   $00,    $80,    $54
+        DB $00,   $00,    $00,    $00
+        DB $00,   $00,    $F0,    $64
+        DB $00,   $00,    $80,    $64
+        DB $00,   $00,    $00,    $00
+
+CrateKnockSfx:
+        ;  channel, row count, row length
+        DB 4,       12,         2
+        DW CrateKnockSfxData
 
         POPS
 
