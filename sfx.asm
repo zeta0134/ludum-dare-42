@@ -129,7 +129,7 @@ DeathByRUDSfxData:
 
 DeathByRUDSfx:
         ;  channel, row count, row length
-        DB 4,       16,         6
+        DB 4,       16,         7
         DW DeathByRUDSfxData
 
         POPS
