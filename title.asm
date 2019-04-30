@@ -95,6 +95,9 @@ initTitleScreen:
         ld      [rLCDC],a
         ei
 
+        ; SKIP STARTING THE BGM
+        ; ret
+
         ld a, $0F
         call gbt_enable_channels
 

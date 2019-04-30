@@ -486,6 +486,9 @@ updatePlayer:
         ; and kill the jump timer; no hugging the ceiling!
         ld a, 0
         ld [playerJumpTimer], a
+        ; something something bonkers
+        ld hl, CeilingBonkSfx
+        call queueSound
         ; done!
 .notCeiling
         ; un-stash af and bail

@@ -69,6 +69,15 @@ KathunkSfx:
         DB 4,       12,         2
         DW KathunkSfxData
 
+CeilingBonkSfxData:
+        ;  sweep, duty+length, volume, note
+        DB $2A,   $C0,         $F2,    D4
+
+CeilingBonkSfx:
+        ;  channel, row count, row length
+        DB 1,       1,         8
+        DW CeilingBonkSfxData
+
         POPS
 
         PUSHS           
