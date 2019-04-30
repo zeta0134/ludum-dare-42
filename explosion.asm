@@ -124,6 +124,14 @@ updateExplosions:
         ld bc, StaticAnimation
         call setSpriteAnimation
         setFieldByte SPRITE_TILE_BASE, 6
+        ; If the player is not already dead, play the death by RUD Sfx
+        ld a, [playerDead]
+        cp 0
+        jp nz, .alreadyDead
+        ld hl, DeathByRUDSfx
+        call queueSound
+
+.alreadyDead
         ; Tell the player that they're dead
         ld a, 1
         ld [playerDead], a
@@ -236,9 +244,13 @@ updateExplosions:
         bit 7, a
         jp nz, .notVisible
 .visible
+        ; If the player is already dead, skip the regular explosion SFX
+        ld a, [playerDead]
+        cp 0
+        jp nz, .alreadyDeadAgain
         ld hl, ExplosionSfx
-        call queueSound 
-
+        call queueSound
+.alreadyDeadAgain
         ; high byte is within one chunk. This MIGHT not be good enough. We'll see.
         ; Okay, now we start with the player's X coordinate in OAM
         ld a, [shadowOAM + 1] ; first entry, x index

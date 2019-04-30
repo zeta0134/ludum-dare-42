@@ -108,6 +108,30 @@ ExplosionSfx:
         DB 4,       2,         5
         DW ExplosionSfxData
 
+DeathByRUDSfxData:
+        ;  _____, length, volume, poly_params
+        DB $00,   $00,    $F0,    $53
+        DB $00,   $00,    $C0,    $43
+        DB $00,   $00,    $A0,    $33
+        DB $00,   $00,    $F0,    $53
+        DB $00,   $00,    $C0,    $43
+        DB $00,   $00,    $A0,    $33
+        DB $00,   $00,    $F0,    $53
+        DB $00,   $00,    $E0,    $53
+        DB $00,   $00,    $D0,    $43
+        DB $00,   $00,    $C0,    $43
+        DB $00,   $00,    $B0,    $33
+        DB $00,   $00,    $A0,    $33
+        DB $00,   $00,    $A0,    $23
+        DB $00,   $00,    $A0,    $23
+        DB $00,   $00,    $A0,    $13
+        DB $00,   $00,    $A0,    $13
+
+DeathByRUDSfx:
+        ;  channel, row count, row length
+        DB 4,       16,         6
+        DW DeathByRUDSfxData
+
         POPS
 
         PUSHS           

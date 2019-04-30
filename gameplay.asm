@@ -323,6 +323,10 @@ updateMaterials:
         ld a, 8
         ld [cameraShakeTimer], a
         ; play a satisfying sound
+        ; ONLY if the player is alive
+        ld a, [playerDead]
+        cp 0
+        jp nz, .stillAlive
         ld hl, KathunkSfx
         call queueSound
 .stillAlive                         ; }
